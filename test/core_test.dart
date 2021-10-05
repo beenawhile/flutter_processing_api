@@ -92,6 +92,21 @@ void main() {
 
     await screenMatchesGolden(tester, 'core_background_setup_draw');
   });
+
+  testGoldens("setup() paints light grey background by default",
+      (tester) async {
+    // screenshot test = golden test
+    /// Golden Tests: Widget tests. A special mather compares your widget with an image file and expects that it looks the same.
+    configureWindowForSpecTest(tester);
+
+    await tester.pumpWidget(
+      Processing(
+        sketch: Sketch.simple(),
+      ),
+    );
+
+    await screenMatchesGolden(tester, 'core_setup_paints_default_background');
+  });
 }
 
 // class PaintBackgroundInSetupSketch extends Sketch {

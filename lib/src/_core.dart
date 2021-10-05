@@ -35,6 +35,14 @@ class Sketch {
   // TODO: find a way to allow for sketch implementations to avoid
   //       subclassing Sketch.
 
+  void _doSetup() {
+    // By default fill the background with a light gray
+    background(
+      color: const Color(0xFFC5C5C5),
+    );
+    setup();
+  }
+
   // empty implementation
   void setup() {
     _setup?.call(this);
@@ -71,7 +79,7 @@ class _SketchPainter extends CustomPainter {
     sketch
       ..canvas = canvas
       ..size = size
-      ..setup()
+      .._doSetup()
       ..draw();
     // 현재는 애니메이션을 사용하지 않으므로 한번만 수행됨
   }
