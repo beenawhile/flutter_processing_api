@@ -3,19 +3,24 @@ import 'package:flutter_processing/flutter_processing.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 
+import 'test_infra.dart';
+
 void main() {
   group('core', () {
     testGoldens("user can paint background in setup()", (tester) async {
       // screenshot test = golden test
       /// Golden Tests: Widget tests. A special mather compares your widget with an image file and expects that it looks the same.
-      tester.binding.window
-        ..physicalSizeTestValue = const Size(100, 100)
-        // valid for dektop app. not valid for mobile since it is largely densed.
-        ..devicePixelRatioTestValue = 1.0;
+      configureWindowForSpecTest(tester);
 
       await tester.pumpWidget(
         Processing(
-          sketch: PaintBackgroundInSetupSketch(),
+          sketch: Sketch.simple(
+            setup: (s) {
+              s.background(
+                color: const Color(0xFF404040),
+              );
+            },
+          ),
         ),
       );
 
@@ -25,14 +30,17 @@ void main() {
     testGoldens("user can paint background in draw()", (tester) async {
       // screenshot test = golden test
       /// Golden Tests: Widget tests. A special mather compares your widget with an image file and expects that it looks the same.
-      tester.binding.window
-        ..physicalSizeTestValue = const Size(100, 100)
-        // valid for dektop app. not valid for mobile since it is largely densed.
-        ..devicePixelRatioTestValue = 1.0;
+      configureWindowForSpecTest(tester);
 
       await tester.pumpWidget(
         Processing(
-          sketch: PaintBackgroundInDrawSketch(),
+          sketch: Sketch.simple(
+            draw: (s) {
+              s.background(
+                color: const Color(0xFF404040),
+              );
+            },
+          ),
         ),
       );
 
@@ -42,14 +50,17 @@ void main() {
     testGoldens("user can paint orange background", (tester) async {
       // screenshot test = golden test
       /// Golden Tests: Widget tests. A special mather compares your widget with an image file and expects that it looks the same.
-      tester.binding.window
-        ..physicalSizeTestValue = const Size(100, 100)
-        // valid for dektop app. not valid for mobile since it is largely densed.
-        ..devicePixelRatioTestValue = 1.0;
+      configureWindowForSpecTest(tester);
 
       await tester.pumpWidget(
         Processing(
-          sketch: PaintOrangeBackgroundSketch(),
+          sketch: Sketch.simple(
+            draw: (s) {
+              s.background(
+                color: const Color(0xFFFFCC00),
+              );
+            },
+          ),
         ),
       );
 
@@ -60,14 +71,22 @@ void main() {
       (tester) async {
     // screenshot test = golden test
     /// Golden Tests: Widget tests. A special mather compares your widget with an image file and expects that it looks the same.
-    tester.binding.window
-      ..physicalSizeTestValue = const Size(100, 100)
-      // valid for dektop app. not valid for mobile since it is largely densed.
-      ..devicePixelRatioTestValue = 1.0;
+    configureWindowForSpecTest(tester);
 
     await tester.pumpWidget(
       Processing(
-        sketch: PaintBackgroundInSetupAndDrawSketch(),
+        sketch: Sketch.simple(
+          setup: (s) {
+            s.background(
+              color: const Color(0xFFFF0000),
+            );
+          },
+          draw: (s) {
+            s.background(
+              color: const Color(0xFF404040),
+            );
+          },
+        ),
       ),
     );
 
@@ -75,35 +94,35 @@ void main() {
   });
 }
 
-class PaintBackgroundInSetupSketch extends Sketch {
-  @override
-  void setUp() {
-    background(color: const Color(0xFF404040));
-  }
-}
+// class PaintBackgroundInSetupSketch extends Sketch {
+//   @override
+//   void setup() {
+//     background(color: const Color(0xFF404040));
+//   }
+// }
 
-class PaintBackgroundInDrawSketch extends Sketch {
-  @override
-  void draw() {
-    background(color: const Color(0xFF404040));
-  }
-}
+// class PaintBackgroundInDrawSketch extends Sketch {
+//   @override
+//   void draw() {
+//     background(color: const Color(0xFF404040));
+//   }
+// }
 
-class PaintOrangeBackgroundSketch extends Sketch {
-  @override
-  void draw() {
-    background(color: const Color(0xFFFFCC00));
-  }
-}
+// class PaintOrangeBackgroundSketch extends Sketch {
+//   @override
+//   void draw() {
+//     background(color: const Color(0xFFFFCC00));
+//   }
+// }
 
-class PaintBackgroundInSetupAndDrawSketch extends Sketch {
-  @override
-  void setUp() {
-    background(color: const Color(0xFFFF0000));
-  }
+// class PaintBackgroundInSetupAndDrawSketch extends Sketch {
+//   @override
+//   void setup() {
+//     background(color: const Color(0xFFFF0000));
+//   }
 
-  @override
-  void draw() {
-    background(color: const Color(0xFF404040));
-  }
-}
+//   @override
+//   void draw() {
+//     background(color: const Color(0xFF404040));
+//   }
+// }

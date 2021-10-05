@@ -20,14 +20,29 @@ class Processing extends StatelessWidget {
   }
 }
 
-abstract class Sketch {
+class Sketch {
+  Sketch();
+
+  Sketch.simple({
+    void Function(Sketch)? setup,
+    void Function(Sketch)? draw,
+  })  : _setup = setup,
+        _draw = draw;
+
+  void Function(Sketch)? _setup;
+  void Function(Sketch)? _draw;
+
   // TODO: find a way to allow for sketch implementations to avoid
   //       subclassing Sketch.
 
   // empty implementation
-  void setUp() {}
+  void setup() {
+    _setup?.call(this);
+  }
 
-  void draw() {}
+  void draw() {
+    _draw?.call(this);
+  }
 
   Canvas? canvas;
   Size? size;
@@ -56,7 +71,7 @@ class _SketchPainter extends CustomPainter {
     sketch
       ..canvas = canvas
       ..size = size
-      ..setUp()
+      ..setup()
       ..draw();
     // 현재는 애니메이션을 사용하지 않으므로 한번만 수행됨
   }
