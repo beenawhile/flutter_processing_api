@@ -25,6 +25,24 @@ void main() {
         await screenMatchesGolden(
             tester, 'shape_2d_primitives_circle-example-1');
       });
+
+      testGoldens("squre(): example 1", (tester) async {
+        configureWindowForSpecTest(tester);
+
+        await tester.pumpWidget(
+          Processing(
+            sketch: Sketch.simple(draw: (s) {
+              s.circle(
+                center: const Offset(56, 46),
+                diameter: 55,
+              );
+            }),
+          ),
+        );
+
+        await screenMatchesGolden(
+            tester, 'shape_2d_primitives_squre-example-1');
+      });
     });
   });
 }
