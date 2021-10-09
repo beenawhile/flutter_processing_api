@@ -26,22 +26,85 @@ void main() {
             tester, 'shape_2d_primitives_circle-example-1');
       });
 
-      testGoldens("squre(): example 1", (tester) async {
+      testGoldens("square(): example 1", (tester) async {
         configureWindowForSpecTest(tester);
 
         await tester.pumpWidget(
           Processing(
-            sketch: Sketch.simple(draw: (s) {
-              s.circle(
-                center: const Offset(56, 46),
-                diameter: 55,
-              );
-            }),
+            sketch: Sketch.simple(
+              draw: (s) {
+                s.square(
+                  Square.fromLTE(const Offset(30, 20), 55),
+                  // Squre.fromCenter(Offset(30,20), 55)
+                );
+              },
+            ),
           ),
         );
 
         await screenMatchesGolden(
-            tester, 'shape_2d_primitives_squre-example-1');
+            tester, 'shape_2d_primitives_square-example-1');
+      });
+      testGoldens("rect(): example 1", (tester) async {
+        configureWindowForSpecTest(tester);
+
+        await tester.pumpWidget(
+          Processing(
+            sketch: Sketch.simple(
+              draw: (s) {
+                s.rect(
+                  rect: const Rect.fromLTWH(30, 20, 55, 55),
+                  // Squre.fromCenter(Offset(30,20), 55)
+                );
+              },
+            ),
+          ),
+        );
+
+        await screenMatchesGolden(tester, 'shape_2d_primitives_rect-example-1');
+      });
+      testGoldens("rect(): example 2", (tester) async {
+        configureWindowForSpecTest(tester);
+
+        await tester.pumpWidget(
+          Processing(
+            sketch: Sketch.simple(
+              draw: (s) {
+                s.rect(
+                    rect: const Rect.fromLTWH(30, 20, 55, 55),
+                    borderRadius: BorderRadius.circular(7)
+                    // Squre.fromCenter(Offset(30,20), 55)
+                    );
+              },
+            ),
+          ),
+        );
+
+        await screenMatchesGolden(tester, 'shape_2d_primitives_rect-example-2');
+      });
+      testGoldens("rect(): example 3", (tester) async {
+        configureWindowForSpecTest(tester);
+
+        await tester.pumpWidget(
+          Processing(
+            sketch: Sketch.simple(
+              draw: (s) {
+                s.rect(
+                  rect: const Rect.fromLTWH(30, 20, 55, 55),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(3),
+                    topRight: Radius.circular(6),
+                    bottomRight: Radius.circular(12),
+                    bottomLeft: Radius.circular(18),
+                  ),
+                  // Squre.fromCenter(Offset(30,20), 55)
+                );
+              },
+            ),
+          ),
+        );
+
+        await screenMatchesGolden(tester, 'shape_2d_primitives_rect-example-3');
       });
     });
   });
