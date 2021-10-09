@@ -106,6 +106,26 @@ void main() {
 
         await screenMatchesGolden(tester, 'shape_2d_primitives_rect-example-3');
       });
+      testGoldens("triangle(): example 1", (tester) async {
+        configureWindowForSpecTest(tester);
+
+        await tester.pumpWidget(
+          Processing(
+            sketch: Sketch.simple(
+              draw: (s) {
+                s.triangle(
+                  const Offset(30, 75),
+                  const Offset(58, 20),
+                  const Offset(86, 75),
+                );
+              },
+            ),
+          ),
+        );
+
+        await screenMatchesGolden(
+            tester, 'shape_2d_primitives_triangle-example-1');
+      });
     });
   });
 }

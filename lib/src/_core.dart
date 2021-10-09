@@ -130,6 +130,23 @@ class Sketch {
         ..drawRRect(rrect, _strokePaint!);
     }
   }
+
+  void triangle(
+    Offset p1,
+    Offset p2,
+    Offset p3,
+  ) {
+    final path = Path()
+      ..moveTo(p1.dx, p1.dy)
+      ..lineTo(p2.dx, p2.dy)
+      ..lineTo(p3.dx, p3.dy)
+      ..close();
+
+    canvas!
+      ..drawPath(path, _fillPaint!)
+      ..drawPath(path, _strokePaint!);
+  }
+
   // ------ End Shape/2D Primitives ------
 
   // TODO: implement all other processing apis.
