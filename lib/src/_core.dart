@@ -147,6 +147,57 @@ class Sketch {
       ..drawPath(path, _strokePaint!);
   }
 
+  void quad(
+    Offset p1,
+    Offset p2,
+    Offset p3,
+    Offset p4,
+  ) {
+    final path = Path()
+      ..moveTo(p1.dx, p1.dy)
+      ..lineTo(p2.dx, p2.dy)
+      ..lineTo(p3.dx, p3.dy)
+      ..lineTo(p4.dx, p4.dy)
+      ..close();
+
+    canvas!
+      ..drawPath(path, _fillPaint!)
+      ..drawPath(path, _strokePaint!);
+  }
+
+  void line(Offset p1, Offset p2, [Offset? p3]) {
+    if (p3 != null) {
+      throw UnimplementedError("3D line drawing is not supported yet.");
+    }
+
+    canvas!.drawLine(p1, p2, _strokePaint!);
+  }
+
+  void point({
+    required double x,
+    required double y,
+    double? z,
+  }) {
+    if (z != null) {
+      throw UnimplementedError("3D point drawing is not yet supported");
+    }
+
+    final _strokePaintForPoint = Paint()
+      ..color = _strokePaint!.color
+      ..style = PaintingStyle.fill;
+
+    canvas!.drawRect(
+      Rect.fromLTWH(x, y, 1, 1),
+      _strokePaintForPoint,
+    );
+  }
+
+  void ellipse(Ellipse ellipse) {
+    canvas!
+      ..drawOval(ellipse.rect, _fillPaint!)
+      ..drawOval(ellipse.rect, _strokePaint!);
+  }
+
   // ------ End Shape/2D Primitives ------
 
   // TODO: implement all other processing apis.
@@ -171,6 +222,50 @@ class Square {
   Rect? _rect;
 
   Square._();
+
+  Rect get rect => _rect!;
+}
+
+class Ellipse {
+  Ellipse.fromLTWH(
+      {required Offset topLeft, required double width, required double height})
+      : _rect = Rect.fromLTWH(
+          topLeft.dx,
+          topLeft.dy,
+          width,
+          height,
+        );
+
+  Ellipse.fromLTRB({required Offset topLeft, required Offset bottomRight})
+      : _rect = Rect.fromLTRB(
+          topLeft.dx,
+          topLeft.dy,
+          bottomRight.dx,
+          bottomRight.dy,
+        );
+
+  Ellipse.fromCenter({
+    required Offset center,
+    required double width,
+    required double height,
+  }) : _rect = Rect.fromCenter(
+          center: center,
+          width: width,
+          height: height,
+        );
+  Ellipse.fromCenterWithRadius({
+    required Offset center,
+    required double radius1,
+    required double radius2,
+  }) : _rect = Rect.fromCenter(
+          center: center,
+          width: radius1 * 2,
+          height: radius2 * 2,
+        );
+
+  Rect? _rect;
+
+  Ellipse._();
 
   Rect get rect => _rect!;
 }
