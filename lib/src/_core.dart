@@ -1,6 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:math';
 
-class Processing extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+
+class Processing extends StatefulWidget {
   const Processing({
     Key? key,
     required this.sketch,
@@ -9,12 +12,49 @@ class Processing extends StatelessWidget {
   final Sketch sketch;
 
   @override
+  State<Processing> createState() => _ProcessingState();
+}
+
+class _ProcessingState extends State<Processing>
+    with SingleTickerProviderStateMixin {
+  late Ticker _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = createTicker(_onTick)..start();
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(Processing oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.sketch != oldWidget.sketch) {
+      _ticker
+        ..stop()
+        ..start();
+    }
+  }
+
+  void _onTick(Duration elapsedTime) {
+    setState(() {
+      widget.sketch.elapsedTime = elapsedTime;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     // TODO: implement animation frames, keyboard input, mouse input
     return CustomPaint(
       size: Size.infinite,
       painter: _SketchPainter(
-        sketch: sketch,
+        sketch: widget.sketch,
       ),
     );
   }
@@ -32,16 +72,18 @@ class Sketch {
   void Function(Sketch)? _setup;
   void Function(Sketch)? _draw;
 
-  // TODO: find a way to allow for sketch implementations to avoid
-  //       subclassing Sketch.
+  bool _hasDoneSetup = false;
 
   void _doSetup() {
-    assert(canvas != null);
-    assert(size != null);
+    if (_hasDoneSetup) {
+      return;
+    }
+
+    _hasDoneSetup = true;
 
     // By default fill the background with a light gray
     background(
-      color: const Color(0xFFC5C5C5),
+      color: _backgroundColor,
     );
 
     // By default, the fill color is white and stroke is 1px black
@@ -62,61 +104,123 @@ class Sketch {
     _setup?.call(this);
   }
 
+  void _onDraw() {
+    background(color: _backgroundColor);
+
+    if (_lastDrawTime != null) {
+      if (_elapsedTime - _lastDrawTime! < _desiredFrameTime) {
+        return;
+      }
+    }
+
+    draw();
+
+    _frameCount += 1;
+    _lastDrawTime = _elapsedTime;
+
+    final secondsFraction = _elapsedTime.inMilliseconds / 1000.0;
+    _actualFrameRate = secondsFraction > 0
+        ? (_frameCount / secondsFraction).round()
+        : _actualFrameRate;
+  }
+
   void draw() {
     _draw?.call(this);
   }
 
-  Canvas? canvas;
-  Size? size;
-  Paint? _fillPaint;
-  Paint? _strokePaint;
+  late Canvas canvas;
+  late Size size;
+  late Paint _fillPaint;
+  late Paint _strokePaint;
+  Color _backgroundColor = Color(0xFFC5C5C5);
 
   // ------ Start Color/Setting ------
+
   void background({
     required Color color,
   }) {
     final paint = Paint()..color = color;
-    canvas!.drawRect(Offset.zero & size!, paint);
+    canvas.drawRect(Offset.zero & size, paint);
   }
 
   void fill({
     required Color color,
   }) {
-    _fillPaint!.color = color;
+    _fillPaint.color = color;
   }
 
   void noFill() {
-    _fillPaint!.color = Colors.transparent;
+    _fillPaint.color = Colors.transparent;
   }
 
   void stroke({required Color color}) {
-    _strokePaint!.color = color;
+    _strokePaint.color = color;
   }
 
   void noStroke() {
-    _strokePaint!.color = Colors.transparent;
+    _strokePaint.color = Colors.transparent;
+  }
+  // ------ End Color/Setting ------
+
+  // ------ Start Environment ------
+  Duration _elapsedTime = Duration.zero;
+  set elapsedTime(Duration newElapsedTime) => _elapsedTime = newElapsedTime;
+
+  Duration? _lastDrawTime;
+
+  int _frameCount = 0;
+  int get frameCount => _frameCount;
+
+  int _actualFrameRate = 10;
+  int get frameRate => _actualFrameRate;
+
+  Duration _desiredFrameTime = Duration(
+    milliseconds: (1000.0 / 60).floor(),
+  );
+  set frameRate(int frameRate) => _desiredFrameTime = Duration(
+        milliseconds: (1000.0 / frameRate).floor(),
+      );
+  // ------ End Environment ------
+
+  // ------ Start Random ------
+  Random _random = Random();
+
+  /// Sets the seed value for all [random()] invocations to the given [seed]
+  /// To return to a natural seed value, pass [null] for [seed].
+  void randomSeed(int? seed) {
+    _random = Random(seed);
   }
 
-  // ------ End Color/Setting ------
+  double random(num bound1, [num? bound2]) {
+    final lowerBound = bound2 != null ? bound1 : 0;
+    final upperBound = bound2 ?? bound1;
+
+    if (upperBound < lowerBound) {
+      throw Exception("random() lower bound must be less than upper bound");
+    }
+
+    return _random.nextDouble() * (upperBound - lowerBound) + lowerBound;
+  }
+  // ------ End Random ------
 
   // ------ Start Shape/2D Primitives ------
   void circle({required Offset center, required double diameter}) {
-    canvas!
-      ..drawCircle(center, diameter / 2, _fillPaint!)
-      ..drawCircle(center, diameter / 2, _strokePaint!);
+    canvas
+      ..drawCircle(center, diameter / 2, _fillPaint)
+      ..drawCircle(center, diameter / 2, _strokePaint);
   }
 
   void square(Square square) {
-    canvas!
-      ..drawRect(square.rect, _fillPaint!)
-      ..drawRect(square.rect, _strokePaint!);
+    canvas
+      ..drawRect(square.rect, _fillPaint)
+      ..drawRect(square.rect, _strokePaint);
   }
 
   void rect({required Rect rect, BorderRadius? borderRadius}) {
     if (borderRadius == null) {
-      canvas!
-        ..drawRect(rect, _fillPaint!)
-        ..drawRect(rect, _strokePaint!);
+      canvas
+        ..drawRect(rect, _fillPaint)
+        ..drawRect(rect, _strokePaint);
     } else {
       final rrect = RRect.fromRectAndCorners(
         rect,
@@ -125,9 +229,9 @@ class Sketch {
         bottomLeft: borderRadius.bottomLeft,
         bottomRight: borderRadius.bottomRight,
       );
-      canvas!
-        ..drawRRect(rrect, _fillPaint!)
-        ..drawRRect(rrect, _strokePaint!);
+      canvas
+        ..drawRRect(rrect, _fillPaint)
+        ..drawRRect(rrect, _strokePaint);
     }
   }
 
@@ -142,9 +246,9 @@ class Sketch {
       ..lineTo(p3.dx, p3.dy)
       ..close();
 
-    canvas!
-      ..drawPath(path, _fillPaint!)
-      ..drawPath(path, _strokePaint!);
+    canvas
+      ..drawPath(path, _fillPaint)
+      ..drawPath(path, _strokePaint);
   }
 
   void quad(
@@ -160,9 +264,9 @@ class Sketch {
       ..lineTo(p4.dx, p4.dy)
       ..close();
 
-    canvas!
-      ..drawPath(path, _fillPaint!)
-      ..drawPath(path, _strokePaint!);
+    canvas
+      ..drawPath(path, _fillPaint)
+      ..drawPath(path, _strokePaint);
   }
 
   void line(Offset p1, Offset p2, [Offset? p3]) {
@@ -170,7 +274,7 @@ class Sketch {
       throw UnimplementedError("3D line drawing is not supported yet.");
     }
 
-    canvas!.drawLine(p1, p2, _strokePaint!);
+    canvas.drawLine(p1, p2, _strokePaint);
   }
 
   void point({
@@ -183,24 +287,64 @@ class Sketch {
     }
 
     final _strokePaintForPoint = Paint()
-      ..color = _strokePaint!.color
+      ..color = _strokePaint.color
       ..style = PaintingStyle.fill;
 
-    canvas!.drawRect(
+    canvas.drawRect(
       Rect.fromLTWH(x, y, 1, 1),
       _strokePaintForPoint,
     );
   }
 
   void ellipse(Ellipse ellipse) {
-    canvas!
-      ..drawOval(ellipse.rect, _fillPaint!)
-      ..drawOval(ellipse.rect, _strokePaint!);
+    canvas
+      ..drawOval(ellipse.rect, _fillPaint)
+      ..drawOval(ellipse.rect, _strokePaint);
+  }
+
+  void arc({
+    required Ellipse ellipse,
+    required double startAngle,
+    required double endAngle,
+    ArcMode mode = ArcMode.openStrokePieFill,
+  }) {
+    switch (mode) {
+      case ArcMode.openStrokePieFill:
+        canvas
+          ..drawArc(
+              ellipse.rect, startAngle, endAngle - startAngle, true, _fillPaint)
+          ..drawArc(ellipse.rect, startAngle, endAngle - startAngle, false,
+              _strokePaint);
+        break;
+      case ArcMode.open:
+        canvas
+          ..drawArc(ellipse.rect, startAngle, endAngle - startAngle, false,
+              _fillPaint)
+          ..drawArc(ellipse.rect, startAngle, endAngle - startAngle, false,
+              _strokePaint);
+        break;
+      case ArcMode.chord:
+        final chordPath = Path()
+          ..addArc(ellipse.rect, startAngle, endAngle - startAngle)
+          ..close();
+
+        canvas
+          ..drawArc(ellipse.rect, startAngle, endAngle - startAngle, false,
+              _fillPaint)
+          ..drawPath(chordPath, _strokePaint);
+        break;
+      case ArcMode.pie:
+        canvas
+          ..drawArc(
+              ellipse.rect, startAngle, endAngle - startAngle, true, _fillPaint)
+          ..drawArc(ellipse.rect, startAngle, endAngle - startAngle, true,
+              _strokePaint);
+        break;
+    }
   }
 
   // ------ End Shape/2D Primitives ------
 
-  // TODO: implement all other processing apis.
 }
 
 class Square {
@@ -270,6 +414,13 @@ class Ellipse {
   Rect get rect => _rect!;
 }
 
+enum ArcMode {
+  openStrokePieFill,
+  open,
+  chord,
+  pie,
+}
+
 class _SketchPainter extends CustomPainter {
   final Sketch sketch;
   _SketchPainter({
@@ -282,7 +433,7 @@ class _SketchPainter extends CustomPainter {
       ..canvas = canvas
       ..size = size
       .._doSetup()
-      ..draw();
+      .._onDraw();
     // 현재는 애니메이션을 사용하지 않으므로 한번만 수행됨
   }
 

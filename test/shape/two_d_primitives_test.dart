@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_processing/flutter_processing.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -321,6 +323,113 @@ void main() {
 
         await screenMatchesGolden(
             tester, 'shape_2d_primitives_ellipse-example-3');
+      });
+
+      testGoldens("arc(): example 1", (tester) async {
+        configureWindowForSpecTest(tester);
+
+        await tester.pumpWidget(
+          Processing(
+            sketch: Sketch.simple(
+              draw: (s) {
+                s
+                  ..arc(
+                    ellipse: Ellipse.fromCenter(
+                        center: const Offset(50, 55), width: 50, height: 50),
+                    startAngle: 0,
+                    endAngle: pi / 2,
+                  )
+                  ..noFill()
+                  ..arc(
+                    ellipse: Ellipse.fromCenter(
+                        center: const Offset(50, 55), width: 60, height: 60),
+                    startAngle: pi / 2,
+                    endAngle: pi,
+                  )
+                  ..arc(
+                    ellipse: Ellipse.fromCenter(
+                        center: const Offset(50, 55), width: 70, height: 70),
+                    startAngle: pi,
+                    endAngle: pi + (pi / 4),
+                  )
+                  ..arc(
+                    ellipse: Ellipse.fromCenter(
+                        center: const Offset(50, 55), width: 70, height: 70),
+                    startAngle: pi + (pi / 4),
+                    endAngle: 2 * pi,
+                  );
+              },
+            ),
+          ),
+        );
+
+        await screenMatchesGolden(tester, 'shape_2d_primitives_arc-example-1');
+      });
+
+      testGoldens("arc(): example 2", (tester) async {
+        configureWindowForSpecTest(tester);
+
+        await tester.pumpWidget(
+          Processing(
+            sketch: Sketch.simple(
+              draw: (s) {
+                s.arc(
+                  ellipse: Ellipse.fromCenter(
+                      center: const Offset(50, 50), width: 80, height: 80),
+                  startAngle: 0,
+                  endAngle: pi + (pi / 4),
+                  mode: ArcMode.open,
+                );
+              },
+            ),
+          ),
+        );
+
+        await screenMatchesGolden(tester, 'shape_2d_primitives_arc-example-2');
+      });
+
+      testGoldens("arc(): example 3", (tester) async {
+        configureWindowForSpecTest(tester);
+
+        await tester.pumpWidget(
+          Processing(
+            sketch: Sketch.simple(
+              draw: (s) {
+                s.arc(
+                  ellipse: Ellipse.fromCenter(
+                      center: const Offset(50, 50), width: 80, height: 80),
+                  startAngle: 0,
+                  endAngle: pi + (pi / 4),
+                  mode: ArcMode.chord,
+                );
+              },
+            ),
+          ),
+        );
+
+        await screenMatchesGolden(tester, 'shape_2d_primitives_arc-example-3');
+      });
+
+      testGoldens("arc(): example 4", (tester) async {
+        configureWindowForSpecTest(tester);
+
+        await tester.pumpWidget(
+          Processing(
+            sketch: Sketch.simple(
+              draw: (s) {
+                s.arc(
+                  ellipse: Ellipse.fromCenter(
+                      center: const Offset(50, 50), width: 80, height: 80),
+                  startAngle: 0,
+                  endAngle: pi + (pi / 4),
+                  mode: ArcMode.pie,
+                );
+              },
+            ),
+          ),
+        );
+
+        await screenMatchesGolden(tester, 'shape_2d_primitives_arc-example-4');
       });
     });
   });
