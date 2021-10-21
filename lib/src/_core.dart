@@ -51,10 +51,15 @@ class _ProcessingState extends State<Processing>
   @override
   Widget build(BuildContext context) {
     // TODO: implement animation frames, keyboard input, mouse input
-    return CustomPaint(
-      size: Size.infinite,
-      painter: _SketchPainter(
-        sketch: widget.sketch,
+    return Center(
+      child: CustomPaint(
+        size: Size(
+          widget.sketch._desiredWidth.toDouble(),
+          widget.sketch._desiredHeight.toDouble(),
+        ),
+        painter: _SketchPainter(
+          sketch: widget.sketch,
+        ),
       ),
     );
   }
@@ -107,13 +112,13 @@ class Sketch {
   void _onDraw() {
     background(color: _backgroundColor);
 
+    draw();
+
     if (_lastDrawTime != null) {
       if (_elapsedTime - _lastDrawTime! < _desiredFrameTime) {
         return;
       }
     }
-
-    draw();
 
     _frameCount += 1;
     _lastDrawTime = _elapsedTime;
@@ -128,19 +133,24 @@ class Sketch {
     _draw?.call(this);
   }
 
-  late Canvas canvas;
-  late Size size;
+  late Canvas _canvas;
+  late Size _size;
   late Paint _fillPaint;
   late Paint _strokePaint;
   Color _backgroundColor = Color(0xFFC5C5C5);
+
+  int _desiredWidth = 100;
+  int _desiredHeight = 100;
 
   // ------ Start Color/Setting ------
 
   void background({
     required Color color,
   }) {
+    _backgroundColor = color;
+
     final paint = Paint()..color = color;
-    canvas.drawRect(Offset.zero & size, paint);
+    _canvas.drawRect(Offset.zero & _size, paint);
   }
 
   void fill({
@@ -180,6 +190,15 @@ class Sketch {
   set frameRate(int frameRate) => _desiredFrameTime = Duration(
         milliseconds: (1000.0 / frameRate).floor(),
       );
+
+  int get width => _size.width.toInt();
+
+  int get height => _size.height.toInt();
+
+  void size({required int width, required int height}) {
+    _desiredWidth = width;
+    _desiredHeight = height;
+  }
   // ------ End Environment ------
 
   // ------ Start Random ------
@@ -205,20 +224,20 @@ class Sketch {
 
   // ------ Start Shape/2D Primitives ------
   void circle({required Offset center, required double diameter}) {
-    canvas
+    _canvas
       ..drawCircle(center, diameter / 2, _fillPaint)
       ..drawCircle(center, diameter / 2, _strokePaint);
   }
 
   void square(Square square) {
-    canvas
+    _canvas
       ..drawRect(square.rect, _fillPaint)
       ..drawRect(square.rect, _strokePaint);
   }
 
   void rect({required Rect rect, BorderRadius? borderRadius}) {
     if (borderRadius == null) {
-      canvas
+      _canvas
         ..drawRect(rect, _fillPaint)
         ..drawRect(rect, _strokePaint);
     } else {
@@ -229,7 +248,7 @@ class Sketch {
         bottomLeft: borderRadius.bottomLeft,
         bottomRight: borderRadius.bottomRight,
       );
-      canvas
+      _canvas
         ..drawRRect(rrect, _fillPaint)
         ..drawRRect(rrect, _strokePaint);
     }
@@ -246,7 +265,7 @@ class Sketch {
       ..lineTo(p3.dx, p3.dy)
       ..close();
 
-    canvas
+    _canvas
       ..drawPath(path, _fillPaint)
       ..drawPath(path, _strokePaint);
   }
@@ -264,7 +283,7 @@ class Sketch {
       ..lineTo(p4.dx, p4.dy)
       ..close();
 
-    canvas
+    _canvas
       ..drawPath(path, _fillPaint)
       ..drawPath(path, _strokePaint);
   }
@@ -274,7 +293,7 @@ class Sketch {
       throw UnimplementedError("3D line drawing is not supported yet.");
     }
 
-    canvas.drawLine(p1, p2, _strokePaint);
+    _canvas.drawLine(p1, p2, _strokePaint);
   }
 
   void point({
@@ -290,14 +309,14 @@ class Sketch {
       ..color = _strokePaint.color
       ..style = PaintingStyle.fill;
 
-    canvas.drawRect(
+    _canvas.drawRect(
       Rect.fromLTWH(x, y, 1, 1),
       _strokePaintForPoint,
     );
   }
 
   void ellipse(Ellipse ellipse) {
-    canvas
+    _canvas
       ..drawOval(ellipse.rect, _fillPaint)
       ..drawOval(ellipse.rect, _strokePaint);
   }
@@ -310,14 +329,14 @@ class Sketch {
   }) {
     switch (mode) {
       case ArcMode.openStrokePieFill:
-        canvas
+        _canvas
           ..drawArc(
               ellipse.rect, startAngle, endAngle - startAngle, true, _fillPaint)
           ..drawArc(ellipse.rect, startAngle, endAngle - startAngle, false,
               _strokePaint);
         break;
       case ArcMode.open:
-        canvas
+        _canvas
           ..drawArc(ellipse.rect, startAngle, endAngle - startAngle, false,
               _fillPaint)
           ..drawArc(ellipse.rect, startAngle, endAngle - startAngle, false,
@@ -328,13 +347,13 @@ class Sketch {
           ..addArc(ellipse.rect, startAngle, endAngle - startAngle)
           ..close();
 
-        canvas
+        _canvas
           ..drawArc(ellipse.rect, startAngle, endAngle - startAngle, false,
               _fillPaint)
           ..drawPath(chordPath, _strokePaint);
         break;
       case ArcMode.pie:
-        canvas
+        _canvas
           ..drawArc(
               ellipse.rect, startAngle, endAngle - startAngle, true, _fillPaint)
           ..drawArc(ellipse.rect, startAngle, endAngle - startAngle, true,
@@ -430,8 +449,8 @@ class _SketchPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     sketch
-      ..canvas = canvas
-      ..size = size
+      .._canvas = canvas
+      .._size = size
       .._doSetup()
       .._onDraw();
     // 현재는 애니메이션을 사용하지 않으므로 한번만 수행됨
