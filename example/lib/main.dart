@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:example/1_starfield/starfield_screen.dart';
+import 'package:example/2_purple_rain/purple_rain_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_processing/flutter_processing.dart';
 
@@ -17,154 +19,51 @@ class FlutterProcessingExampleApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const HomeScreen(title: 'Flutter Demo Home Page'),
+      home: const HomeScreen(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  final _stars = <Star>[];
-
-  @override
-  void reassemble() {
-    super.reassemble();
-    _stars.clear();
-  }
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.yellow,
-      body: Center(
-          child: Processing(
-        sketch: Sketch.simple(
-          setup: (s) {
-            final width = 1600;
-            final height = 900;
-
-            s
-              ..size(
-                width: width,
-                height: height,
-              )
-              ..background(color: Colors.black);
-
-            for (var i = 0; i < 70; i++) {
-              _stars.add(
-                Star(
-                  x: s.random(-width / 2, width / 2),
-                  y: s.random(-width / 2, width / 2),
-                  z: s.random(width),
-                ),
-              );
-            }
-
-            for (var i = 0; i < 30; i++) {
-              _stars.add(
-                Star(
-                  x: s.random(-width / 2, width / 2),
-                  y: s.random(-width / 2, width / 2),
-                  z: s.random(width),
-                  color: Colors.purple,
-                ),
-              );
-            }
-          },
-          draw: (s) {
-            for (var star in _stars) {
-              star.update(s);
-            }
-
-            for (var star in _stars) {
-              star.paintStreak(s, star.color);
-            }
-
-            for (var star in _stars) {
-              star.paintStar(s, star.color);
-            }
-          },
+        appBar: AppBar(
+          title: const Text("Flutter Processing Example"),
         ),
-      )),
-    );
-  }
-}
-
-class Star {
-  double x, y, z;
-  double originalZ;
-  Color color;
-
-  Star({
-    required this.x,
-    required this.y,
-    required this.z,
-    this.color = Colors.white,
-  }) : originalZ = z {
-    originalZ = z;
-  }
-
-  void update(Sketch s) {
-    // 이렇게 임의로 값을 정하는 것을 지양하라
-    z -= 5;
-
-    originalZ -= 4.5;
-
-    if (z <= 0) {
-      x = s.random(-s.width / 2, s.width / 2);
-      y = s.random(-s.height / 2, s.height / 2);
-      z = s.random(s.width);
-      originalZ = z;
-    }
-  }
-
-  void paintStreak(Sketch s, [Color? strokeColor]) {
-    final center = Offset(s.width / 2, s.height / 2);
-
-    final perspectiveOrigin = Offset(
-      lerpDouble(0, s.width, x / originalZ)!,
-      lerpDouble(0, s.height, y / originalZ)!,
-    );
-
-    final perspectivePosition = Offset(
-      lerpDouble(0, s.width, x / z)!,
-      lerpDouble(0, s.height, y / z)!,
-    );
-
-    s
-      ..stroke(
-        color: strokeColor?.withOpacity(.3) ?? color.withOpacity(.3),
-      )
-      ..line(
-        perspectiveOrigin + center,
-        perspectivePosition + center,
-      );
-  }
-
-  void paintStar(Sketch s, [Color? fillColor]) {
-    final center = Offset(s.width / 2, s.height / 2);
-
-    final perspectiveOffset = Offset(
-      lerpDouble(0, s.width, x / z)!,
-      lerpDouble(0, s.height, y / z)!,
-    );
-
-    final diameter = lerpDouble(12, 0, z / s.width)!;
-
-    s
-      ..noStroke()
-      ..fill(color: fillColor ?? color)
-      ..circle(
-        center: perspectiveOffset + center,
-        diameter: diameter,
-      );
+        body: SafeArea(
+          child: SingleChildScrollView(
+              child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const StarfieldScreen(),
+                    ),
+                  ),
+                  child: const Text("1. Starfield"),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PurpleRainScreen(),
+                    ),
+                  ),
+                  child: const Text("2. Purple Rain"),
+                ),
+              ],
+            ),
+          )),
+        ));
   }
 }
