@@ -58,12 +58,23 @@ class _HomeScreenState extends State<HomeScreen> {
               )
               ..background(color: Colors.black);
 
-            for (var i = 0; i < 100; i++) {
+            for (var i = 0; i < 70; i++) {
               _stars.add(
                 Star(
                   x: s.random(-width / 2, width / 2),
                   y: s.random(-width / 2, width / 2),
                   z: s.random(width),
+                ),
+              );
+            }
+
+            for (var i = 0; i < 30; i++) {
+              _stars.add(
+                Star(
+                  x: s.random(-width / 2, width / 2),
+                  y: s.random(-width / 2, width / 2),
+                  z: s.random(width),
+                  color: Colors.purple,
                 ),
               );
             }
@@ -74,11 +85,11 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             for (var star in _stars) {
-              star.paintStreak(s);
+              star.paintStreak(s, star.color);
             }
 
             for (var star in _stars) {
-              star.paintStar(s);
+              star.paintStar(s, star.color);
             }
           },
         ),
@@ -90,20 +101,22 @@ class _HomeScreenState extends State<HomeScreen> {
 class Star {
   double x, y, z;
   double originalZ;
+  Color color;
 
   Star({
     required this.x,
     required this.y,
     required this.z,
+    this.color = Colors.white,
   }) : originalZ = z {
     originalZ = z;
   }
 
   void update(Sketch s) {
     // 이렇게 임의로 값을 정하는 것을 지양하라
-    z -= 30;
+    z -= 5;
 
-    originalZ -= 15;
+    originalZ -= 4.5;
 
     if (z <= 0) {
       x = s.random(-s.width / 2, s.width / 2);
@@ -113,7 +126,7 @@ class Star {
     }
   }
 
-  void paintStreak(Sketch s) {
+  void paintStreak(Sketch s, [Color? strokeColor]) {
     final center = Offset(s.width / 2, s.height / 2);
 
     final perspectiveOrigin = Offset(
@@ -128,7 +141,7 @@ class Star {
 
     s
       ..stroke(
-        color: Colors.white.withOpacity(.3),
+        color: strokeColor?.withOpacity(.3) ?? color.withOpacity(.3),
       )
       ..line(
         perspectiveOrigin + center,
@@ -136,7 +149,7 @@ class Star {
       );
   }
 
-  void paintStar(Sketch s) {
+  void paintStar(Sketch s, [Color? fillColor]) {
     final center = Offset(s.width / 2, s.height / 2);
 
     final perspectiveOffset = Offset(
@@ -148,7 +161,7 @@ class Star {
 
     s
       ..noStroke()
-      ..fill(color: Colors.white)
+      ..fill(color: fillColor ?? color)
       ..circle(
         center: perspectiveOffset + center,
         diameter: diameter,
