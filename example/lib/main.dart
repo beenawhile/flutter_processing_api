@@ -1,9 +1,6 @@
-import 'dart:ui';
-
 import 'package:example/1_starfield/starfield_screen.dart';
 import 'package:example/2_purple_rain/purple_rain_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_processing/flutter_processing.dart';
 
 void main() {
   runApp(const FlutterProcessingExampleApp());
