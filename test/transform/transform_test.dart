@@ -41,15 +41,15 @@ void main() {
           sketch: Sketch.simple(draw: (s) {
             s
               ..rect(
-                rect: Rect.fromLTWH(0, 0, 55, 55),
+                rect: const Rect.fromLTWH(0, 0, 55, 55),
               )
               ..translate(x: 30, y: 20)
               ..rect(
-                rect: Rect.fromLTWH(0, 0, 55, 55),
+                rect: const Rect.fromLTWH(0, 0, 55, 55),
               )
               ..translate(x: 14, y: 14)
               ..rect(
-                rect: Rect.fromLTWH(0, 0, 55, 55),
+                rect: const Rect.fromLTWH(0, 0, 55, 55),
               );
           }),
         ),
