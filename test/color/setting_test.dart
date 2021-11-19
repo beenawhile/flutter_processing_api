@@ -17,9 +17,11 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.background(
-                  color: const Color(0xFF404040),
-                );
+                s
+                  ..noLoop()
+                  ..background(
+                    color: const Color(0xFF404040),
+                  );
               },
             ),
           ),
@@ -37,9 +39,11 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.background(
-                  color: const Color(0xFFFFCC00),
-                );
+                s
+                  ..noLoop()
+                  ..background(
+                    color: const Color(0xFFFFCC00),
+                  );
               },
             ),
           ),
@@ -57,9 +61,11 @@ void main() {
         Processing(
           sketch: Sketch.simple(
             setup: (s) {
-              s.background(
-                color: const Color(0xFF404040),
-              );
+              s
+                ..noLoop()
+                ..background(
+                  color: const Color(0xFF404040),
+                );
             },
           ),
         ),
@@ -78,9 +84,11 @@ void main() {
         Processing(
           sketch: Sketch.simple(
             setup: (s) {
-              s.background(
-                color: const Color(0xFFFF0000),
-              );
+              s
+                ..noLoop()
+                ..background(
+                  color: const Color(0xFFFF0000),
+                );
             },
             draw: (s) {
               s.background(
@@ -105,12 +113,14 @@ void main() {
       Processing(
         sketch: Sketch.simple(
           draw: (s) {
-            s.fill(
-              color: const Color(0xFF969696),
-            );
-            s.rect(
-              rect: const Rect.fromLTWH(30, 20, 55, 55),
-            );
+            s
+              ..noLoop()
+              ..fill(
+                color: const Color(0xFF969696),
+              )
+              ..rect(
+                rect: const Rect.fromLTWH(30, 20, 55, 55),
+              );
           },
         ),
       ),
@@ -127,12 +137,14 @@ void main() {
       Processing(
         sketch: Sketch.simple(
           draw: (s) {
-            s.fill(
-              color: const Color(0xFFCC6600),
-            );
-            s.rect(
-              rect: const Rect.fromLTWH(30, 20, 55, 55),
-            );
+            s
+              ..noLoop()
+              ..fill(
+                color: const Color(0xFFCC6600),
+              )
+              ..rect(
+                rect: const Rect.fromLTWH(30, 20, 55, 55),
+              );
           },
         ),
       ),
@@ -150,13 +162,15 @@ void main() {
       Processing(
         sketch: Sketch.simple(
           draw: (s) {
-            s.rect(
-              rect: const Rect.fromLTWH(15, 10, 55, 55),
-            );
-            s.noFill();
-            s.rect(
-              rect: const Rect.fromLTWH(30, 20, 55, 55),
-            );
+            s
+              ..noLoop()
+              ..rect(
+                rect: const Rect.fromLTWH(15, 10, 55, 55),
+              )
+              ..noFill()
+              ..rect(
+                rect: const Rect.fromLTWH(30, 20, 55, 55),
+              );
           },
         ),
       ),
@@ -174,12 +188,14 @@ void main() {
       Processing(
         sketch: Sketch.simple(
           draw: (s) {
-            s.stroke(
-              color: const Color(0xFFAAAAAA),
-            );
-            s.rect(
-              rect: const Rect.fromLTWH(30, 20, 55, 55),
-            );
+            s
+              ..noLoop()
+              ..stroke(
+                color: const Color(0xFFAAAAAA),
+              )
+              ..rect(
+                rect: const Rect.fromLTWH(30, 20, 55, 55),
+              );
           },
         ),
       ),
@@ -197,12 +213,14 @@ void main() {
       Processing(
         sketch: Sketch.simple(
           draw: (s) {
-            s.stroke(
-              color: const Color(0xFFCC6600),
-            );
-            s.rect(
-              rect: const Rect.fromLTWH(30, 20, 55, 55),
-            );
+            s
+              ..noLoop()
+              ..stroke(
+                color: const Color(0xFFCC6600),
+              )
+              ..rect(
+                rect: const Rect.fromLTWH(30, 20, 55, 55),
+              );
           },
         ),
       ),
@@ -219,10 +237,12 @@ void main() {
       Processing(
         sketch: Sketch.simple(
           draw: (s) {
-            s.noStroke();
-            s.rect(
-              rect: const Rect.fromLTWH(30, 20, 55, 55),
-            );
+            s
+              ..noLoop()
+              ..noStroke()
+              ..rect(
+                rect: const Rect.fromLTWH(30, 20, 55, 55),
+              );
           },
         ),
       ),

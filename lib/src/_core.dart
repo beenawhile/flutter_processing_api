@@ -23,6 +23,11 @@ class _ProcessingState extends State<Processing>
   void initState() {
     super.initState();
     _ticker = createTicker(_onTick)..start();
+
+    widget.sketch
+      .._onSizeChanged = _onSizeChanged
+      .._loop = _loop
+      .._noLoop = _noLoop;
   }
 
   @override
@@ -36,9 +41,20 @@ class _ProcessingState extends State<Processing>
     super.didUpdateWidget(oldWidget);
 
     if (widget.sketch != oldWidget.sketch) {
-      _ticker
-        ..stop()
-        ..start();
+      oldWidget.sketch
+        .._onSizeChanged = null
+        .._loop = null
+        .._noLoop = null;
+
+      widget.sketch
+        .._onSizeChanged = _onSizeChanged
+        .._loop = _loop
+        .._noLoop = _noLoop;
+
+      _ticker.stop();
+      if (widget.sketch._isLooping) {
+        _ticker.start();
+      }
     }
   }
 
@@ -46,6 +62,14 @@ class _ProcessingState extends State<Processing>
     setState(() {
       widget.sketch.elapsedTime = elapsedTime;
     });
+  }
+
+  void _onSizeChanged() {
+    WidgetsBinding.instance!.addPostFrameCallback(
+      (timeStamp) {
+        setState(() {});
+      },
+    );
   }
 
   void _noLoop() {
@@ -124,13 +148,14 @@ class Sketch {
   void _onDraw() {
     background(color: _backgroundColor);
 
-    draw();
+    // TODO: figure out how to correctly support varying frame rates
+    // if (_lastDrawTime != null) {
+    //   if (_elapsedTime - _lastDrawTime! < _desiredFrameTime) {
+    //     return;
+    //   }
+    // }
 
-    if (_lastDrawTime != null) {
-      if (_elapsedTime - _lastDrawTime! < _desiredFrameTime) {
-        return;
-      }
-    }
+    draw();
 
     _frameCount += 1;
     _lastDrawTime = _elapsedTime;
@@ -153,6 +178,23 @@ class Sketch {
 
   int _desiredWidth = 100;
   int _desiredHeight = 100;
+  VoidCallback? _onSizeChanged;
+
+  // ------ Start Structure ------
+  bool _isLooping = true;
+  VoidCallback? _loop;
+  VoidCallback? _noLoop;
+
+  void loop() {
+    _isLooping = true;
+    _loop?.call();
+  }
+
+  void noLoop() {
+    _isLooping = false;
+    _noLoop?.call();
+  }
+  // ------ End Structure ------
 
   // ------ Start Color/Setting ------
 
@@ -210,6 +252,7 @@ class Sketch {
   void size({required int width, required int height}) {
     _desiredWidth = width;
     _desiredHeight = height;
+    _onSizeChanged?.call();
   }
   // ------ End Environment ------
 
@@ -388,7 +431,6 @@ class Sketch {
 
     _canvas.translate(x ?? 0, y ?? 0);
   }
-
   // ------ End Transform ------
 
 }

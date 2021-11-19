@@ -16,6 +16,7 @@ void main() {
         Processing(
           sketch: Sketch.simple(draw: (s) {
             s
+              ..noLoop()
               ..translate(x: 30, y: 20)
               ..rect(
                 rect: Rect.fromLTWH(0, 0, 55, 55),
@@ -27,10 +28,6 @@ void main() {
       await screenMatchesGolden(
         tester,
         'transform_translate-example-1',
-        customPump: (tester) async {
-          await tester.pump(const Duration(milliseconds: 17));
-          await tester.pump(const Duration(milliseconds: 17));
-        },
       );
     });
     testGoldens("translate(): example 2", (tester) async {
@@ -40,6 +37,7 @@ void main() {
         Processing(
           sketch: Sketch.simple(draw: (s) {
             s
+              ..noLoop()
               ..rect(
                 rect: const Rect.fromLTWH(0, 0, 55, 55),
               )
@@ -58,10 +56,6 @@ void main() {
       await screenMatchesGolden(
         tester,
         'transform_translate-example-2',
-        customPump: (tester) async {
-          await tester.pump(const Duration(milliseconds: 17));
-          await tester.pump(const Duration(milliseconds: 17));
-        },
       );
     });
   });

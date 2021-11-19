@@ -17,6 +17,7 @@ void main() {
             sketch: Sketch.simple(
               draw: (s) {
                 s
+                  ..noLoop()
                   ..noStroke()
                   ..background(color: Colors.black)
                   ..rect(
@@ -43,9 +44,6 @@ void main() {
         await screenMatchesGolden(
           tester,
           "environment_width-example-1",
-          customPump: (tester) async {
-            await tester.pump();
-          },
         );
       },
     );
@@ -60,6 +58,7 @@ void main() {
             sketch: Sketch.simple(
               draw: (s) {
                 s
+                  ..noLoop()
                   ..noStroke()
                   ..background(color: Colors.black)
                   ..rect(
@@ -86,9 +85,6 @@ void main() {
         await screenMatchesGolden(
           tester,
           "environment_height-example-1",
-          customPump: (tester) async {
-            await tester.pump();
-          },
         );
       },
     );
@@ -105,7 +101,9 @@ void main() {
         await tester.pumpWidget(
           Processing(
             sketch: Sketch.simple(setup: (s) {
-              s.size(width: 200, height: 200);
+              s
+                ..noLoop()
+                ..size(width: 200, height: 200);
             }, draw: (s) {
               s.circle(center: const Offset(100, 100), diameter: 50);
             }),
@@ -115,11 +113,6 @@ void main() {
         await screenMatchesGolden(
           tester,
           "environment_size-example-1",
-          customPump: (tester) async {
-            await tester.pump(
-              const Duration(milliseconds: 17),
-            );
-          },
         );
       },
     );

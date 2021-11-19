@@ -16,10 +16,12 @@ void main() {
         await tester.pumpWidget(
           Processing(
             sketch: Sketch.simple(draw: (s) {
-              s.circle(
-                center: const Offset(56, 46),
-                diameter: 55,
-              );
+              s
+                ..noLoop()
+                ..circle(
+                  center: const Offset(56, 46),
+                  diameter: 55,
+                );
             }),
           ),
         );
@@ -35,10 +37,12 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.square(
-                  Square.fromLTE(const Offset(30, 20), 55),
-                  // Squre.fromCenter(Offset(30,20), 55)
-                );
+                s
+                  ..noLoop()
+                  ..square(
+                    Square.fromLTE(const Offset(30, 20), 55),
+                    // Squre.fromCenter(Offset(30,20), 55)
+                  );
               },
             ),
           ),
@@ -55,10 +59,12 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.rect(
-                  rect: const Rect.fromLTWH(30, 20, 55, 55),
-                  // Squre.fromCenter(Offset(30,20), 55)
-                );
+                s
+                  ..noLoop()
+                  ..rect(
+                    rect: const Rect.fromLTWH(30, 20, 55, 55),
+                    // Squre.fromCenter(Offset(30,20), 55)
+                  );
               },
             ),
           ),
@@ -74,11 +80,13 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.rect(
-                    rect: const Rect.fromLTWH(30, 20, 55, 55),
-                    borderRadius: BorderRadius.circular(7)
-                    // Squre.fromCenter(Offset(30,20), 55)
-                    );
+                s
+                  ..noLoop()
+                  ..rect(
+                      rect: const Rect.fromLTWH(30, 20, 55, 55),
+                      borderRadius: BorderRadius.circular(7)
+                      // Squre.fromCenter(Offset(30,20), 55)
+                      );
               },
             ),
           ),
@@ -94,16 +102,18 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.rect(
-                  rect: const Rect.fromLTWH(30, 20, 55, 55),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(3),
-                    topRight: Radius.circular(6),
-                    bottomRight: Radius.circular(12),
-                    bottomLeft: Radius.circular(18),
-                  ),
-                  // Squre.fromCenter(Offset(30,20), 55)
-                );
+                s
+                  ..noLoop()
+                  ..rect(
+                    rect: const Rect.fromLTWH(30, 20, 55, 55),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(3),
+                      topRight: Radius.circular(6),
+                      bottomRight: Radius.circular(12),
+                      bottomLeft: Radius.circular(18),
+                    ),
+                    // Squre.fromCenter(Offset(30,20), 55)
+                  );
               },
             ),
           ),
@@ -119,11 +129,13 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.triangle(
-                  const Offset(30, 75),
-                  const Offset(58, 20),
-                  const Offset(86, 75),
-                );
+                s
+                  ..noLoop()
+                  ..triangle(
+                    const Offset(30, 75),
+                    const Offset(58, 20),
+                    const Offset(86, 75),
+                  );
               },
             ),
           ),
@@ -140,12 +152,14 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.quad(
-                  const Offset(38, 31),
-                  const Offset(86, 20),
-                  const Offset(69, 63),
-                  const Offset(30, 76),
-                );
+                s
+                  ..noLoop()
+                  ..quad(
+                    const Offset(38, 31),
+                    const Offset(86, 20),
+                    const Offset(69, 63),
+                    const Offset(30, 76),
+                  );
               },
             ),
           ),
@@ -161,10 +175,12 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.line(
-                  const Offset(30, 20),
-                  const Offset(85, 75),
-                );
+                s
+                  ..noLoop()
+                  ..line(
+                    const Offset(30, 20),
+                    const Offset(85, 75),
+                  );
               },
             ),
           ),
@@ -181,6 +197,7 @@ void main() {
             sketch: Sketch.simple(
               draw: (s) {
                 s
+                  ..noLoop()
                   ..line(
                     const Offset(30, 20),
                     const Offset(85, 20),
@@ -215,6 +232,7 @@ void main() {
             sketch: Sketch.simple(
               draw: (s) {
                 s
+                  ..noLoop()
                   ..point(
                     x: 30,
                     y: 20,
@@ -246,13 +264,15 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.ellipse(
-                  Ellipse.fromCenter(
-                    center: const Offset(56, 46),
-                    width: 55,
-                    height: 55,
-                  ),
-                );
+                s
+                  ..noLoop()
+                  ..ellipse(
+                    Ellipse.fromCenter(
+                      center: const Offset(56, 46),
+                      width: 55,
+                      height: 55,
+                    ),
+                  );
               },
             ),
           ),
@@ -269,6 +289,7 @@ void main() {
             sketch: Sketch.simple(
               draw: (s) {
                 s
+                  ..noLoop()
                   ..fill(color: const Color.fromARGB(255, 255, 255, 255))
                   ..ellipse(
                     Ellipse.fromCenterWithRadius(
@@ -301,6 +322,7 @@ void main() {
             sketch: Sketch.simple(
               draw: (s) {
                 s
+                  ..noLoop()
                   ..fill(color: const Color.fromARGB(255, 255, 255, 255))
                   ..ellipse(
                     Ellipse.fromLTWH(
@@ -333,6 +355,7 @@ void main() {
             sketch: Sketch.simple(
               draw: (s) {
                 s
+                  ..noLoop()
                   ..arc(
                     ellipse: Ellipse.fromCenter(
                         center: const Offset(50, 55), width: 50, height: 50),
@@ -373,13 +396,15 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.arc(
-                  ellipse: Ellipse.fromCenter(
-                      center: const Offset(50, 50), width: 80, height: 80),
-                  startAngle: 0,
-                  endAngle: pi + (pi / 4),
-                  mode: ArcMode.open,
-                );
+                s
+                  ..noLoop()
+                  ..arc(
+                    ellipse: Ellipse.fromCenter(
+                        center: const Offset(50, 50), width: 80, height: 80),
+                    startAngle: 0,
+                    endAngle: pi + (pi / 4),
+                    mode: ArcMode.open,
+                  );
               },
             ),
           ),
@@ -395,13 +420,15 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.arc(
-                  ellipse: Ellipse.fromCenter(
-                      center: const Offset(50, 50), width: 80, height: 80),
-                  startAngle: 0,
-                  endAngle: pi + (pi / 4),
-                  mode: ArcMode.chord,
-                );
+                s
+                  ..noLoop()
+                  ..arc(
+                    ellipse: Ellipse.fromCenter(
+                        center: const Offset(50, 50), width: 80, height: 80),
+                    startAngle: 0,
+                    endAngle: pi + (pi / 4),
+                    mode: ArcMode.chord,
+                  );
               },
             ),
           ),
@@ -417,13 +444,15 @@ void main() {
           Processing(
             sketch: Sketch.simple(
               draw: (s) {
-                s.arc(
-                  ellipse: Ellipse.fromCenter(
-                      center: const Offset(50, 50), width: 80, height: 80),
-                  startAngle: 0,
-                  endAngle: pi + (pi / 4),
-                  mode: ArcMode.pie,
-                );
+                s
+                  ..noLoop()
+                  ..arc(
+                    ellipse: Ellipse.fromCenter(
+                        center: const Offset(50, 50), width: 80, height: 80),
+                    startAngle: 0,
+                    endAngle: pi + (pi / 4),
+                    mode: ArcMode.pie,
+                  );
               },
             ),
           ),
