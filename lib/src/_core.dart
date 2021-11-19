@@ -48,6 +48,18 @@ class _ProcessingState extends State<Processing>
     });
   }
 
+  void _noLoop() {
+    if (_ticker.isTicking) {
+      _ticker.stop();
+    }
+  }
+
+  void _loop() {
+    if (!_ticker.isTicking) {
+      _ticker.start();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement animation frames, keyboard input, mouse input
