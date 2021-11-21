@@ -31,6 +31,7 @@ class _PurpleRainScreenState extends State<PurpleRainScreen> {
       ),
       body: Center(
         child: Processing(
+          clipBehavior: Clip.hardEdge,
           sketch: Sketch.simple(
             setup: (s) {
               s

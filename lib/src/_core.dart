@@ -7,9 +7,11 @@ class Processing extends StatefulWidget {
   const Processing({
     Key? key,
     required this.sketch,
+    this.clipBehavior = Clip.hardEdge,
   }) : super(key: key);
 
   final Sketch sketch;
+  final Clip clipBehavior;
 
   @override
   State<Processing> createState() => _ProcessingState();
@@ -95,6 +97,7 @@ class _ProcessingState extends State<Processing>
         ),
         painter: _SketchPainter(
           sketch: widget.sketch,
+          clipBehavior: widget.clipBehavior,
         ),
       ),
     );
@@ -511,12 +514,22 @@ enum ArcMode {
 
 class _SketchPainter extends CustomPainter {
   final Sketch sketch;
+  final Clip clipBehavior;
   _SketchPainter({
     required this.sketch,
+    required this.clipBehavior,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (clipBehavior != Clip.none) {
+      canvas.clipRect(Offset.zero & size,
+          doAntiAlias: clipBehavior == Clip.antiAlias ||
+              clipBehavior == Clip.antiAliasWithSaveLayer);
+    }
+
+    // TODO: figure out how to save layer for antiAliasWithSaveLayer
+
     sketch
       .._canvas = canvas
       .._size = size
