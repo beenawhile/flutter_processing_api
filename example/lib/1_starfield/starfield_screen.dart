@@ -32,22 +32,19 @@ class _StarfieldScreenState extends State<StarfieldScreen> {
           child: Processing(
         sketch: Sketch.simple(
           setup: (s) {
-            final width = 1600;
-            final height = 900;
-
             s
               ..size(
-                width: width,
-                height: height,
+                width: 1600,
+                height: 900,
               )
               ..background(color: Colors.black);
 
             for (var i = 0; i < 70; i++) {
               _stars.add(
                 Star(
-                  x: s.random(-width / 2, width / 2),
-                  y: s.random(-width / 2, width / 2),
-                  z: s.random(width),
+                  x: s.random(-s.width / 2, s.width / 2),
+                  y: s.random(-s.width / 2, s.width / 2),
+                  z: s.random(s.width),
                 ),
               );
             }
@@ -55,9 +52,9 @@ class _StarfieldScreenState extends State<StarfieldScreen> {
             for (var i = 0; i < 30; i++) {
               _stars.add(
                 Star(
-                  x: s.random(-width / 2, width / 2),
-                  y: s.random(-width / 2, width / 2),
-                  z: s.random(width),
+                  x: s.random(-s.width / 2, s.width / 2),
+                  y: s.random(-s.width / 2, s.width / 2),
+                  z: s.random(s.width),
                   color: Colors.purple,
                 ),
               );

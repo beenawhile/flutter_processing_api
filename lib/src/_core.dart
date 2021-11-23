@@ -248,9 +248,9 @@ class Sketch {
         milliseconds: (1000.0 / frameRate).floor(),
       );
 
-  int get width => _size.width.toInt();
+  int get width => _desiredWidth;
 
-  int get height => _size.height.toInt();
+  int get height => _desiredHeight;
 
   void size({required int width, required int height}) {
     _desiredWidth = width;
