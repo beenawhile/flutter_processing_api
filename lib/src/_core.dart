@@ -2,14 +2,17 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 
 class Processing extends StatefulWidget {
   const Processing({
     Key? key,
     required this.sketch,
+    this.focusNode,
     this.clipBehavior = Clip.hardEdge,
   }) : super(key: key);
 
+  final FocusNode? focusNode;
   final Sketch sketch;
   final Clip clipBehavior;
 
@@ -19,12 +22,41 @@ class Processing extends StatefulWidget {
 
 class _ProcessingState extends State<Processing>
     with SingleTickerProviderStateMixin {
+  final _controlKeys = <LogicalKeyboardKey>{
+    LogicalKeyboardKey.control,
+    LogicalKeyboardKey.controlLeft,
+    LogicalKeyboardKey.controlRight,
+    LogicalKeyboardKey.meta,
+    LogicalKeyboardKey.metaLeft,
+    LogicalKeyboardKey.metaRight,
+    LogicalKeyboardKey.alt,
+    LogicalKeyboardKey.altLeft,
+    LogicalKeyboardKey.altRight,
+    LogicalKeyboardKey.shift,
+    LogicalKeyboardKey.shiftLeft,
+    LogicalKeyboardKey.shiftRight,
+    LogicalKeyboardKey.capsLock,
+    LogicalKeyboardKey.escape,
+    LogicalKeyboardKey.arrowLeft,
+    LogicalKeyboardKey.arrowDown,
+    LogicalKeyboardKey.arrowUp,
+    LogicalKeyboardKey.arrowRight,
+    LogicalKeyboardKey.home,
+    LogicalKeyboardKey.end,
+    LogicalKeyboardKey.pageUp,
+    LogicalKeyboardKey.pageDown,
+  };
+
   late Ticker _ticker;
+
+  late FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _ticker = createTicker(_onTick)..start();
+
+    _focusNode = widget.focusNode ?? FocusNode();
 
     widget.sketch
       .._onSizeChanged = _onSizeChanged
@@ -34,6 +66,9 @@ class _ProcessingState extends State<Processing>
 
   @override
   void dispose() {
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    }
     _ticker.dispose();
     super.dispose();
   }
@@ -41,6 +76,10 @@ class _ProcessingState extends State<Processing>
   @override
   void didUpdateWidget(Processing oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    if (widget.focusNode != oldWidget.focusNode) {
+      _focusNode = widget.focusNode ?? FocusNode();
+    }
 
     if (widget.sketch != oldWidget.sketch) {
       oldWidget.sketch
@@ -86,18 +125,34 @@ class _ProcessingState extends State<Processing>
     }
   }
 
+  void _onKey(RawKeyEvent event) {
+    if (event is RawKeyDownEvent) {
+      widget.sketch._onKeyPressed(event.logicalKey);
+
+      if (!_controlKeys.contains(event.logicalKey)) {
+        widget.sketch._onKeyTyped(event.logicalKey);
+      }
+    } else if (event is RawKeyUpEvent) {
+      widget.sketch._onKeyReleased(event.logicalKey);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement animation frames, keyboard input, mouse input
-    return Center(
-      child: CustomPaint(
-        size: Size(
-          widget.sketch._desiredWidth.toDouble(),
-          widget.sketch._desiredHeight.toDouble(),
-        ),
-        painter: _SketchPainter(
-          sketch: widget.sketch,
-          clipBehavior: widget.clipBehavior,
+    // TODO: implement mouse input
+    return RawKeyboardListener(
+      focusNode: _focusNode,
+      onKey: _onKey,
+      child: Center(
+        child: CustomPaint(
+          size: Size(
+            widget.sketch._desiredWidth.toDouble(),
+            widget.sketch._desiredHeight.toDouble(),
+          ),
+          painter: _SketchPainter(
+            sketch: widget.sketch,
+            clipBehavior: widget.clipBehavior,
+          ),
         ),
       ),
     );
@@ -110,11 +165,20 @@ class Sketch {
   Sketch.simple({
     void Function(Sketch)? setup,
     void Function(Sketch)? draw,
+    void Function(Sketch)? keyPressed,
+    void Function(Sketch)? keyTyped,
+    void Function(Sketch)? keyReleased,
   })  : _setup = setup,
-        _draw = draw;
+        _draw = draw,
+        _keyPressed = keyPressed,
+        _keyTyped = keyTyped,
+        _keyReleased = keyReleased;
 
   void Function(Sketch)? _setup;
   void Function(Sketch)? _draw;
+  void Function(Sketch)? _keyPressed;
+  void Function(Sketch)? _keyTyped;
+  void Function(Sketch)? _keyReleased;
 
   bool _hasDoneSetup = false;
 
@@ -171,6 +235,37 @@ class Sketch {
 
   void draw() {
     _draw?.call(this);
+  }
+
+  void _onKeyPressed(LogicalKeyboardKey key) {
+    _pressedKeys.add(key);
+    _key = key;
+    _isKeyPressed = true;
+
+    keyPressed();
+  }
+
+  void keyPressed() {
+    _keyPressed?.call(this);
+  }
+
+  void _onKeyTyped(LogicalKeyboardKey key) {
+    keyTyped();
+  }
+
+  void keyTyped() {
+    _keyTyped?.call(this);
+  }
+
+  void _onKeyReleased(LogicalKeyboardKey key) {
+    _pressedKeys.remove(key);
+    _key = key;
+    _isKeyPressed = _pressedKeys.isNotEmpty;
+    keyReleased();
+  }
+
+  void keyReleased() {
+    _keyReleased?.call(this);
   }
 
   late Canvas _canvas;
@@ -431,6 +526,16 @@ class Sketch {
     _strokePaint.strokeWidth = newWeight.toDouble();
   }
   // ------ End Shape/Attributes ------
+
+  // ------ Start Input/Keyboard ------
+  Set<LogicalKeyboardKey> _pressedKeys = {};
+
+  bool _isKeyPressed = false;
+  bool get isKeyPressed => _isKeyPressed;
+
+  LogicalKeyboardKey? _key;
+  LogicalKeyboardKey? get key => _key;
+  // ------ End Input/Keyboard ------
 
   // ------ Start Transform ------
   void translate({
