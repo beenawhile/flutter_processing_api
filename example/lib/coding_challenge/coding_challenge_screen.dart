@@ -1,28 +1,10 @@
-import 'package:example/coding_challenge/coding_challenge_screen.dart';
-import 'package:example/manual_verification/verification_screen.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const FlutterProcessingExampleApp());
-}
+import '1_starfield/starfield_screen.dart';
+import '2_purple_rain/purple_rain_screen.dart';
 
-class FlutterProcessingExampleApp extends StatelessWidget {
-  const FlutterProcessingExampleApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Processing Example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const HomeScreen(),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class CodingChallengeScreen extends StatelessWidget {
+  const CodingChallengeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -43,20 +25,20 @@ class HomeScreen extends StatelessWidget {
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const CodingChallengeScreen(),
+                      builder: (context) => const StarfieldScreen(),
                     ),
                   ),
-                  child: const Text("1. Coding Challenge"),
+                  child: const Text("1. Starfield"),
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ManualVerificationScreen(),
+                      builder: (context) => const PurpleRainScreen(),
                     ),
                   ),
-                  child: const Text("2. Manual Verification"),
+                  child: const Text("2. Purple Rain"),
                 ),
               ],
             ),
