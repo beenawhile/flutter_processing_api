@@ -100,13 +100,16 @@ void main() {
 
         await tester.pumpWidget(
           Processing(
-            sketch: Sketch.simple(setup: (s) {
-              s
-                ..noLoop()
-                ..size(width: 200, height: 200);
-            }, draw: (s) {
-              s.circle(center: const Offset(100, 100), diameter: 50);
-            }),
+            sketch: Sketch.simple(
+              setup: (s) {
+                s
+                  ..noLoop()
+                  ..size(width: 200, height: 200);
+              },
+              draw: (s) {
+                s.circle(center: const Offset(100, 100), diameter: 50);
+              },
+            ),
           ),
         );
 

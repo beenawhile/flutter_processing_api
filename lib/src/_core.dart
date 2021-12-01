@@ -1,7 +1,8 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
@@ -54,6 +55,9 @@ class _ProcessingState extends State<Processing>
 
   late FocusNode _focusNode;
 
+  Image? _currentImage;
+  bool _isDrawing = false;
+
   @override
   void initState() {
     super.initState();
@@ -103,9 +107,37 @@ class _ProcessingState extends State<Processing>
   }
 
   void _onTick(Duration elapsedTime) {
-    setState(() {
-      widget.sketch.elapsedTime = elapsedTime;
-    });
+    if (!_isDrawing) {
+      _doDrawFrame(elapsedTime);
+    }
+  }
+
+  Future<void> _doDrawFrame(Duration elapsedTime) async {
+    _isDrawing = true;
+
+    widget.sketch._updateElapsedTime(elapsedTime);
+
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    final width = widget.sketch._desiredWidth;
+    final height = widget.sketch._desiredHeight;
+
+    widget.sketch
+      .._canvas = canvas
+      .._doSetup()
+      .._onDraw();
+
+    final picture = recorder.endRecording();
+
+    final image = await picture.toImage(width, height);
+
+    if (mounted) {
+      setState(() {
+        _isDrawing = false;
+        _currentImage = image;
+      });
+    }
   }
 
   void _onSizeChanged() {
@@ -245,17 +277,12 @@ class _ProcessingState extends State<Processing>
         onPointerHover: _onPointerHover,
         onPointerSignal: _onPointerSignal,
         child: Center(
-          child: CustomPaint(
-            key: _sketchCanvasKey,
-            size: Size(
-              widget.sketch._desiredWidth.toDouble(),
-              widget.sketch._desiredHeight.toDouble(),
-            ),
-            painter: _SketchPainter(
-              sketch: widget.sketch,
-              clipBehavior: widget.clipBehavior,
-            ),
-          ),
+          child: _currentImage != null
+              ? RawImage(
+                  key: _sketchCanvasKey,
+                  image: _currentImage,
+                )
+              : const SizedBox(),
         ),
       ),
     );
@@ -436,7 +463,7 @@ class Sketch {
   }
 
   late Canvas _canvas;
-  late Size _size;
+  late Size _size = Size(100, 100);
   late Paint _fillPaint;
   late Paint _strokePaint;
   Color _backgroundColor = Color(0xFFC5C5C5);
@@ -493,7 +520,8 @@ class Sketch {
 
   // ------ Start Environment ------
   Duration _elapsedTime = Duration.zero;
-  set elapsedTime(Duration newElapsedTime) => _elapsedTime = newElapsedTime;
+  void _updateElapsedTime(Duration newElapsedTime) =>
+      _elapsedTime = newElapsedTime;
 
   Duration? _lastDrawTime;
 
@@ -517,7 +545,10 @@ class Sketch {
   void size({required int width, required int height}) {
     _desiredWidth = width;
     _desiredHeight = height;
+    _size = Size(width.toDouble(), height.toDouble());
     _onSizeChanged?.call();
+
+    background(color: _backgroundColor);
   }
   // ------ End Environment ------
 
@@ -827,37 +858,4 @@ enum ArcMode {
   open,
   chord,
   pie,
-}
-
-class _SketchPainter extends CustomPainter {
-  final Sketch sketch;
-  final Clip clipBehavior;
-  _SketchPainter({
-    required this.sketch,
-    required this.clipBehavior,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (clipBehavior != Clip.none) {
-      canvas.clipRect(Offset.zero & size,
-          doAntiAlias: clipBehavior == Clip.antiAlias ||
-              clipBehavior == Clip.antiAliasWithSaveLayer);
-    }
-
-    // TODO: figure out how to save layer for antiAliasWithSaveLayer
-
-    sketch
-      .._canvas = canvas
-      .._size = size
-      .._doSetup()
-      .._onDraw();
-    // 현재는 애니메이션을 사용하지 않으므로 한번만 수행됨
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    // repaint on every frame until we know what the appropriate condition is
-    return true;
-  }
 }
