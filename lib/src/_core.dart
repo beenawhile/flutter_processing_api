@@ -2,15 +2,15 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' hide Image;
 
 class Processing extends StatefulWidget {
   const Processing({
     Key? key,
-    required this.sketch,
     this.focusNode,
+    required this.sketch,
     this.clipBehavior = Clip.hardEdge,
   }) : super(key: key);
 
@@ -19,7 +19,7 @@ class Processing extends StatefulWidget {
   final Clip clipBehavior;
 
   @override
-  State<Processing> createState() => _ProcessingState();
+  _ProcessingState createState() => _ProcessingState();
 }
 
 class _ProcessingState extends State<Processing>
@@ -40,19 +40,18 @@ class _ProcessingState extends State<Processing>
     LogicalKeyboardKey.capsLock,
     LogicalKeyboardKey.escape,
     LogicalKeyboardKey.arrowLeft,
-    LogicalKeyboardKey.arrowDown,
-    LogicalKeyboardKey.arrowUp,
     LogicalKeyboardKey.arrowRight,
+    LogicalKeyboardKey.arrowUp,
+    LogicalKeyboardKey.arrowDown,
     LogicalKeyboardKey.home,
     LogicalKeyboardKey.end,
     LogicalKeyboardKey.pageUp,
     LogicalKeyboardKey.pageDown,
   };
 
-  final GlobalKey _sketchCanvasKey = GlobalKey();
+  final _sketchCanvasKey = GlobalKey();
 
   late Ticker _ticker;
-
   late FocusNode _focusNode;
 
   Image? _currentImage;
@@ -69,15 +68,6 @@ class _ProcessingState extends State<Processing>
       .._onSizeChanged = _onSizeChanged
       .._loop = _loop
       .._noLoop = _noLoop;
-  }
-
-  @override
-  void dispose() {
-    if (widget.focusNode == null) {
-      _focusNode.dispose();
-    }
-    _ticker.dispose();
-    super.dispose();
   }
 
   @override
@@ -106,7 +96,16 @@ class _ProcessingState extends State<Processing>
     }
   }
 
-  void _onTick(Duration elapsedTime) {
+  @override
+  void dispose() {
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    }
+    _ticker.dispose();
+    super.dispose();
+  }
+
+  void _onTick(elapsedTime) {
     if (!_isDrawing) {
       _doDrawFrame(elapsedTime);
     }
@@ -119,10 +118,6 @@ class _ProcessingState extends State<Processing>
 
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
-
-    final width = widget.sketch._desiredWidth;
-    final height = widget.sketch._desiredHeight;
-
     widget.sketch
       .._canvas = canvas
       .._doSetup()
@@ -130,6 +125,8 @@ class _ProcessingState extends State<Processing>
 
     final picture = recorder.endRecording();
 
+    final width = widget.sketch._desiredWidth;
+    final height = widget.sketch._desiredHeight;
     final image = await picture.toImage(width, height);
 
     if (mounted) {
@@ -141,11 +138,9 @@ class _ProcessingState extends State<Processing>
   }
 
   void _onSizeChanged() {
-    WidgetsBinding.instance!.addPostFrameCallback(
-      (timeStamp) {
-        setState(() {});
-      },
-    );
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      setState(() {});
+    });
   }
 
   void _noLoop() {
@@ -180,7 +175,7 @@ class _ProcessingState extends State<Processing>
     } else if (mouseButtonMask & kMiddleMouseButton != 0) {
       return MouseButton.center;
     } else {
-      throw Exception("Invalid mouse button mask: $mouseButtonMask");
+      throw Exception('Invalid mouse button mask: $mouseButtonMask');
     }
   }
 
@@ -195,12 +190,15 @@ class _ProcessingState extends State<Processing>
     if (event.kind != PointerDeviceKind.mouse) {
       return;
     }
+
     final mouseButton = _getMouseButton(event.buttons);
 
     widget.sketch._pressedMouseButtons.add(mouseButton);
     widget.sketch
       .._mouseButton = mouseButton
-      .._updateMousePosition(_getCanvasOffsetFromWidgetOffset(event.position))
+      .._updateMousePosition(
+        _getCanvasOffsetFromWidgetOffset(event.position),
+      )
       .._onMousePressed();
   }
 
@@ -208,11 +206,14 @@ class _ProcessingState extends State<Processing>
     if (event.kind != PointerDeviceKind.mouse) {
       return;
     }
+
     final mouseButton = _getMouseButton(event.buttons);
 
     widget.sketch
       .._mouseButton = mouseButton
-      .._updateMousePosition(_getCanvasOffsetFromWidgetOffset(event.position))
+      .._updateMousePosition(
+        _getCanvasOffsetFromWidgetOffset(event.position),
+      )
       .._onMouseDragged();
   }
 
@@ -221,16 +222,18 @@ class _ProcessingState extends State<Processing>
       return;
     }
 
-    // TODO: the PointerUpEvent does not report which button was released
+    // TODO: the PointerUpEvent does not report which button was relased,
     //       therefore we don't know which one to remove from the set.
-    //        For now, we remove all pressed button
+    //       For now, we remove all pressed button.
     //
-    //       Fine an appropriate solution to handle concurrent mouse button
-    //        press and released.
+    //       Find an appropriate solution to handle concurrent mouse button
+    //       presses and releases.
     widget.sketch._pressedMouseButtons.clear();
     widget.sketch
       .._mouseButton = null
-      .._updateMousePosition(_getCanvasOffsetFromWidgetOffset(event.position))
+      .._updateMousePosition(
+        _getCanvasOffsetFromWidgetOffset(event.position),
+      )
       .._onMouseReleased()
       .._onMouseClicked();
   }
@@ -240,10 +243,18 @@ class _ProcessingState extends State<Processing>
       return;
     }
 
+    // TODO: the PointerUpEvent does not report which button was relased,
+    //       therefore we don't know which one to remove from the set.
+    //       For now, we remove all pressed button.
+    //
+    //       Find an appropriate solution to handle concurrent mouse button
+    //       presses and releases.
     widget.sketch._pressedMouseButtons.clear();
     widget.sketch
       .._mouseButton = null
-      .._updateMousePosition(_getCanvasOffsetFromWidgetOffset(event.position))
+      .._updateMousePosition(
+        _getCanvasOffsetFromWidgetOffset(event.position),
+      )
       .._onMouseReleased();
   }
 
@@ -251,8 +262,11 @@ class _ProcessingState extends State<Processing>
     if (event.kind != PointerDeviceKind.mouse) {
       return;
     }
+
     widget.sketch
-      .._updateMousePosition(_getCanvasOffsetFromWidgetOffset(event.position))
+      .._updateMousePosition(
+        _getCanvasOffsetFromWidgetOffset(event.position),
+      )
       .._onMouseMoved();
   }
 
@@ -282,7 +296,9 @@ class _ProcessingState extends State<Processing>
                   key: _sketchCanvasKey,
                   image: _currentImage,
                 )
-              : const SizedBox(),
+              : SizedBox(
+                  key: _sketchCanvasKey,
+                ),
         ),
       ),
     );
@@ -290,8 +306,6 @@ class _ProcessingState extends State<Processing>
 }
 
 class Sketch {
-  Sketch();
-
   Sketch.simple({
     void Function(Sketch)? setup,
     void Function(Sketch)? draw,
@@ -303,7 +317,7 @@ class Sketch {
     void Function(Sketch)? mouseReleased,
     void Function(Sketch)? mouseClicked,
     void Function(Sketch)? mouseMoved,
-    void Function(Sketch, double count)? mouseWheel,
+    void Function(Sketch, double)? mouseWheel,
   })  : _setup = setup,
         _draw = draw,
         _keyPressed = keyPressed,
@@ -315,6 +329,8 @@ class Sketch {
         _mouseClicked = mouseClicked,
         _mouseMoved = mouseMoved,
         _mouseWheel = mouseWheel;
+
+  Sketch();
 
   void Function(Sketch)? _setup;
   void Function(Sketch)? _draw;
@@ -334,19 +350,15 @@ class Sketch {
     if (_hasDoneSetup) {
       return;
     }
-
     _hasDoneSetup = true;
 
-    // By default fill the background with a light gray
-    background(
-      color: _backgroundColor,
-    );
+    // By default fill the background with a light grey.
+    background(color: _backgroundColor);
 
-    // By default, the fill color is white and stroke is 1px black
+    // By default, the fill color is white and the stroke is 1px black.
     _fillPaint = Paint()
       ..color = const Color(0xFFFFFFFF)
       ..style = PaintingStyle.fill;
-
     _strokePaint = Paint()
       ..color = const Color(0xFF000000)
       ..style = PaintingStyle.stroke
@@ -355,7 +367,6 @@ class Sketch {
     setup();
   }
 
-  // empty implementation
   void setup() {
     _setup?.call(this);
   }
@@ -407,6 +418,7 @@ class Sketch {
   void _onKeyReleased(LogicalKeyboardKey key) {
     _pressedKeys.remove(key);
     _key = key;
+
     keyReleased();
   }
 
@@ -466,13 +478,13 @@ class Sketch {
   late Size _size = Size(100, 100);
   late Paint _fillPaint;
   late Paint _strokePaint;
-  Color _backgroundColor = Color(0xFFC5C5C5);
+  Color _backgroundColor = const Color(0xFFC5C5C5);
 
   int _desiredWidth = 100;
   int _desiredHeight = 100;
   VoidCallback? _onSizeChanged;
 
-  // ------ Start Structure ------
+  //------ Start Structure -----
   bool _isLooping = true;
   VoidCallback? _loop;
   VoidCallback? _noLoop;
@@ -486,10 +498,66 @@ class Sketch {
     _isLooping = false;
     _noLoop?.call();
   }
-  // ------ End Structure ------
 
-  // ------ Start Color/Setting ------
+  //------ Start Environment -----
+  Duration _elapsedTime = Duration.zero;
+  void _updateElapsedTime(Duration newElapsedTime) =>
+      _elapsedTime = newElapsedTime;
 
+  Duration? _lastDrawTime;
+
+  int _frameCount = 0;
+  int get frameCount => _frameCount;
+
+  int _actualFrameRate = 10;
+  int get frameRate => _actualFrameRate;
+
+  Duration _desiredFrameTime = Duration(milliseconds: (1000.0 / 60).floor());
+  set frameRate(int frameRate) {
+    print('WARNING: non-natural frame rates are very buggy at this time');
+
+    _desiredFrameTime = Duration(milliseconds: (1000.0 / frameRate).floor());
+  }
+
+  int get width => _desiredWidth;
+
+  int get height => _desiredHeight;
+
+  void size({
+    required int width,
+    required int height,
+  }) {
+    _desiredWidth = width;
+    _desiredHeight = height;
+    _size = Size(width.toDouble(), height.toDouble());
+    _onSizeChanged?.call();
+
+    background(color: _backgroundColor);
+  }
+
+  //------ Start Random -----
+  Random _random = Random();
+
+  /// Sets the seed value for all [random()] invocations to the given
+  /// [seed].
+  ///
+  /// To return to a natural seed value, pass [null] for [seed].
+  void randomSeed(int? seed) {
+    _random = Random(seed);
+  }
+
+  double random(num bound1, [num? bound2]) {
+    final lowerBound = bound2 != null ? bound1 : 0;
+    final upperBound = bound2 != null ? bound2 : bound1;
+
+    if (upperBound < lowerBound) {
+      throw Exception('random() lower bound must be less than upper bound');
+    }
+
+    return _random.nextDouble() * (upperBound - lowerBound) + lowerBound;
+  }
+
+  //------ Start Color/Setting -----
   void background({
     required Color color,
   }) {
@@ -506,169 +574,58 @@ class Sketch {
   }
 
   void noFill() {
-    _fillPaint.color = Colors.transparent;
+    _fillPaint.color = const Color(0x00000000);
   }
 
-  void stroke({required Color color}) {
+  void stroke({
+    required Color color,
+  }) {
     _strokePaint.color = color;
   }
 
   void noStroke() {
-    _strokePaint.color = Colors.transparent;
+    _strokePaint.color = const Color(0x00000000);
   }
-  // ------ End Color/Setting ------
+  //------- End Color/Setting -----
 
-  // ------ Start Environment ------
-  Duration _elapsedTime = Duration.zero;
-  void _updateElapsedTime(Duration newElapsedTime) =>
-      _elapsedTime = newElapsedTime;
-
-  Duration? _lastDrawTime;
-
-  int _frameCount = 0;
-  int get frameCount => _frameCount;
-
-  int _actualFrameRate = 10;
-  int get frameRate => _actualFrameRate;
-
-  Duration _desiredFrameTime = Duration(
-    milliseconds: (1000.0 / 60).floor(),
-  );
-  set frameRate(int frameRate) => _desiredFrameTime = Duration(
-        milliseconds: (1000.0 / frameRate).floor(),
-      );
-
-  int get width => _desiredWidth;
-
-  int get height => _desiredHeight;
-
-  void size({required int width, required int height}) {
-    _desiredWidth = width;
-    _desiredHeight = height;
-    _size = Size(width.toDouble(), height.toDouble());
-    _onSizeChanged?.call();
-
-    background(color: _backgroundColor);
-  }
-  // ------ End Environment ------
-
-  // ------ Start Random ------
-  Random _random = Random();
-
-  /// Sets the seed value for all [random()] invocations to the given [seed]
-  /// To return to a natural seed value, pass [null] for [seed].
-  void randomSeed(int? seed) {
-    _random = Random(seed);
-  }
-
-  double random(num bound1, [num? bound2]) {
-    final lowerBound = bound2 != null ? bound1 : 0;
-    final upperBound = bound2 ?? bound1;
-
-    if (upperBound < lowerBound) {
-      throw Exception("random() lower bound must be less than upper bound");
-    }
-
-    return _random.nextDouble() * (upperBound - lowerBound) + lowerBound;
-  }
-  // ------ End Random ------
-
-  // ------ Start Shape/2D Primitives ------
-  void circle({required Offset center, required double diameter}) {
-    _canvas
-      ..drawCircle(center, diameter / 2, _fillPaint)
-      ..drawCircle(center, diameter / 2, _strokePaint);
-  }
-
-  void square(Square square) {
-    _canvas
-      ..drawRect(square.rect, _fillPaint)
-      ..drawRect(square.rect, _strokePaint);
-  }
-
-  void rect({required Rect rect, BorderRadius? borderRadius}) {
-    if (borderRadius == null) {
-      _canvas
-        ..drawRect(rect, _fillPaint)
-        ..drawRect(rect, _strokePaint);
-    } else {
-      final rrect = RRect.fromRectAndCorners(
-        rect,
-        topLeft: borderRadius.topLeft,
-        topRight: borderRadius.topRight,
-        bottomLeft: borderRadius.bottomLeft,
-        bottomRight: borderRadius.bottomRight,
-      );
-      _canvas
-        ..drawRRect(rrect, _fillPaint)
-        ..drawRRect(rrect, _strokePaint);
-    }
-  }
-
-  void triangle(
-    Offset p1,
-    Offset p2,
-    Offset p3,
-  ) {
-    final path = Path()
-      ..moveTo(p1.dx, p1.dy)
-      ..lineTo(p2.dx, p2.dy)
-      ..lineTo(p3.dx, p3.dy)
-      ..close();
-
-    _canvas
-      ..drawPath(path, _fillPaint)
-      ..drawPath(path, _strokePaint);
-  }
-
-  void quad(
-    Offset p1,
-    Offset p2,
-    Offset p3,
-    Offset p4,
-  ) {
-    final path = Path()
-      ..moveTo(p1.dx, p1.dy)
-      ..lineTo(p2.dx, p2.dy)
-      ..lineTo(p3.dx, p3.dy)
-      ..lineTo(p4.dx, p4.dy)
-      ..close();
-
-    _canvas
-      ..drawPath(path, _fillPaint)
-      ..drawPath(path, _strokePaint);
-  }
-
-  void line(Offset p1, Offset p2, [Offset? p3]) {
-    if (p3 != null) {
-      throw UnimplementedError("3D line drawing is not supported yet.");
-    }
-
-    _canvas.drawLine(p1, p2, _strokePaint);
-  }
-
+  //----- Start Shape/2D Primitives ----
   void point({
     required double x,
     required double y,
     double? z,
   }) {
     if (z != null) {
-      throw UnimplementedError("3D point drawing is not yet supported");
+      throw UnimplementedError('3D point drawing is not yet supported.');
     }
 
-    final _strokePaintForPoint = Paint()
-      ..color = _strokePaint.color
-      ..style = PaintingStyle.fill;
-
+    _strokePaint.style = PaintingStyle.fill;
     _canvas.drawRect(
       Rect.fromLTWH(x, y, 1, 1),
-      _strokePaintForPoint,
+      _strokePaint,
     );
+    _strokePaint.style = PaintingStyle.stroke;
+  }
+
+  void line(Offset p1, Offset p2, [Offset? p3]) {
+    if (p3 != null) {
+      throw UnimplementedError('3D line drawing is not yet supported.');
+    }
+
+    _canvas.drawLine(p1, p2, _strokePaint);
+  }
+
+  void circle({
+    required Offset center,
+    required double diameter,
+  }) {
+    _canvas
+      ..drawCircle(center, diameter / 2, _fillPaint)
+      ..drawCircle(center, diameter / 2, _strokePaint);
   }
 
   void ellipse(Ellipse ellipse) {
-    _canvas
-      ..drawOval(ellipse.rect, _fillPaint)
+    _canvas //
+      ..drawOval(ellipse.rect, _fillPaint) //
       ..drawOval(ellipse.rect, _strokePaint);
   }
 
@@ -713,21 +670,70 @@ class Sketch {
     }
   }
 
-  // ------ End Shape/2D Primitives ------
+  void square(Square square) {
+    _canvas //
+      ..drawRect(square.rect, _fillPaint) //
+      ..drawRect(square.rect, _strokePaint);
+  }
 
-  // ------ Start Shape/Attributes ------
+  void rect({
+    required Rect rect,
+    BorderRadius? borderRadius,
+  }) {
+    if (borderRadius == null) {
+      _canvas //
+        ..drawRect(rect, _fillPaint) //
+        ..drawRect(rect, _strokePaint);
+    } else {
+      final rrect = RRect.fromRectAndCorners(
+        rect,
+        topLeft: borderRadius.topLeft,
+        topRight: borderRadius.topRight,
+        bottomLeft: borderRadius.bottomLeft,
+        bottomRight: borderRadius.bottomRight,
+      );
+      _canvas //
+        ..drawRRect(rrect, _fillPaint) //
+        ..drawRRect(rrect, _strokePaint);
+    }
+  }
+
+  void triangle(Offset p1, Offset p2, Offset p3) {
+    final path = Path()
+      ..moveTo(p1.dx, p1.dy)
+      ..lineTo(p2.dx, p2.dy)
+      ..lineTo(p3.dx, p3.dy)
+      ..close();
+
+    _canvas //
+      ..drawPath(path, _fillPaint) //
+      ..drawPath(path, _strokePaint);
+  }
+
+  void quad(Offset p1, Offset p2, Offset p3, Offset p4) {
+    final path = Path()
+      ..moveTo(p1.dx, p1.dy)
+      ..lineTo(p2.dx, p2.dy)
+      ..lineTo(p3.dx, p3.dy)
+      ..lineTo(p4.dx, p4.dy)
+      ..close();
+
+    _canvas //
+      ..drawPath(path, _fillPaint) //
+      ..drawPath(path, _strokePaint);
+  }
+  //------- End Shape/2D Primitives -----
+
+  //----- Start Shape/Attributes ----
   void strokeWeight(int newWeight) {
     if (newWeight < 0) {
-      throw Exception("Stroke weight must be >= 0");
+      throw Exception('Stroke weight must be >= 0');
     }
 
     _strokePaint.strokeWidth = newWeight.toDouble();
   }
-  // ------ End Shape/Attributes ------
 
-  // ------ Start Input/Mouse ------
-  Set<MouseButton> _pressedMouseButtons = {};
-
+  //----- Start Input/Mouse ----
   int _mouseX = 0;
   int get mouseX => _mouseX;
 
@@ -740,11 +746,6 @@ class Sketch {
   int _pmouseY = 0;
   int get pmouseY => _pmouseY;
 
-  bool get isMousePressed => _pressedMouseButtons.isNotEmpty;
-
-  MouseButton? _mouseButton;
-  MouseButton? get mouseButton => _mouseButton;
-
   void _updateMousePosition(Offset newPosition) {
     _pmouseX = _mouseX;
     _pmouseY = _mouseY;
@@ -752,9 +753,15 @@ class Sketch {
     _mouseX = newPosition.dx.round();
     _mouseY = newPosition.dy.round();
   }
-  // ------ End Input/Mouse ------
 
-  // ------ Start Input/Keyboard ------
+  Set<MouseButton> _pressedMouseButtons = {};
+
+  bool get isMousePressed => _pressedMouseButtons.isNotEmpty;
+
+  MouseButton? _mouseButton;
+  MouseButton? get mouseButton => _mouseButton;
+
+  //----- Start Input/Keyboard ----
   Set<LogicalKeyboardKey> _pressedKeys = {};
 
   bool get isKeyPressed => _pressedKeys.isNotEmpty;
@@ -762,22 +769,20 @@ class Sketch {
   LogicalKeyboardKey? _key;
   LogicalKeyboardKey? get key => _key;
 
-  // ------ End Input/Keyboard ------
-
-  // ------ Start Transform ------
+  //------- Start Transform ------
   void translate({
     double? x,
     double? y,
     double? z,
   }) {
     if (z != null) {
-      throw UnimplementedError("3D translations are not yet supported");
+      throw UnimplementedError('3D translations are not yet supported.');
     }
 
     _canvas.translate(x ?? 0, y ?? 0);
   }
-  // ------ End Transform ------
 
+  // TODO: implement all other Processing APIs
 }
 
 enum MouseButton {
@@ -802,25 +807,26 @@ class Square {
           height: extent,
         );
 
-  Rect? _rect;
-
-  Square._();
-
-  Rect get rect => _rect!;
+  final Rect _rect;
+  Rect get rect => _rect;
 }
 
 class Ellipse {
-  Ellipse.fromLTWH(
-      {required Offset topLeft, required double width, required double height})
-      : _rect = Rect.fromLTWH(
+  Ellipse.fromLTWH({
+    required Offset topLeft,
+    required double width,
+    required double height,
+  }) : _rect = Rect.fromLTWH(
           topLeft.dx,
           topLeft.dy,
           width,
           height,
         );
 
-  Ellipse.fromLTRB({required Offset topLeft, required Offset bottomRight})
-      : _rect = Rect.fromLTRB(
+  Ellipse.fromLTRB({
+    required Offset topLeft,
+    required Offset bottomRight,
+  }) : _rect = Rect.fromLTRB(
           topLeft.dx,
           topLeft.dy,
           bottomRight.dx,
@@ -836,6 +842,7 @@ class Ellipse {
           width: width,
           height: height,
         );
+
   Ellipse.fromCenterWithRadius({
     required Offset center,
     required double radius1,
@@ -846,11 +853,8 @@ class Ellipse {
           height: radius2 * 2,
         );
 
-  Rect? _rect;
-
-  Ellipse._();
-
-  Rect get rect => _rect!;
+  final Rect _rect;
+  Rect get rect => _rect;
 }
 
 enum ArcMode {
