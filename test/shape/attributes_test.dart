@@ -12,7 +12,7 @@ void main() {
 
         await tester.pumpWidget(
           Processing(
-            sketch: Sketch.simple(draw: (s) {
+            sketch: Sketch.simple(draw: (s) async {
               s
                 ..noLoop()
                 ..strokeWeight(1)

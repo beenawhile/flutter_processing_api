@@ -33,7 +33,7 @@ class _PurpleRainScreenState extends State<PurpleRainScreen> {
         child: Processing(
           clipBehavior: Clip.hardEdge,
           sketch: Sketch.simple(
-            setup: (s) {
+            setup: (s) async {
               s
                 ..size(
                   width: 640,
@@ -58,7 +58,7 @@ class _PurpleRainScreenState extends State<PurpleRainScreen> {
                 );
               }
             },
-            draw: (s) {
+            draw: (s) async {
               for (final droplet in _droplets) {
                 droplet
                   ..show(s)

@@ -31,7 +31,7 @@ class _StarfieldScreenState extends State<StarfieldScreen> {
       body: Center(
           child: Processing(
         sketch: Sketch.simple(
-          setup: (s) {
+          setup: (s) async {
             s
               ..size(
                 width: 1600,
@@ -60,7 +60,7 @@ class _StarfieldScreenState extends State<StarfieldScreen> {
               );
             }
           },
-          draw: (s) {
+          draw: (s) async {
             for (var star in _stars) {
               star.update(s);
             }

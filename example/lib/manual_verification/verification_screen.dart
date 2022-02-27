@@ -1,3 +1,4 @@
+import 'package:example/manual_verification/image/image_verification.dart';
 import 'package:example/manual_verification/mouse/mouse_verification.dart';
 import 'package:flutter/material.dart';
 
@@ -27,6 +28,16 @@ class ManualVerificationScreen extends StatelessWidget {
                     ),
                   ),
                   child: const Text("1. Mouse Verification"),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ImageVerificationScreen(),
+                    ),
+                  ),
+                  child: const Text("2. Image Verification"),
                 ),
               ],
             ),

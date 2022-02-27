@@ -25,7 +25,7 @@ void main() {
                 Processing(
                   focusNode: focusNode,
                   sketch: Sketch.simple(
-                    draw: (s) {
+                    draw: (s) async {
                       s.noLoop();
                     },
                     keyPressed: (s) {
@@ -73,7 +73,7 @@ void main() {
                 Processing(
                   focusNode: focusNode,
                   sketch: Sketch.simple(
-                    draw: (s) {
+                    draw: (s) async {
                       s.noLoop();
                     },
                     keyTyped: (s) {
@@ -102,7 +102,7 @@ void main() {
                 Processing(
                   focusNode: focusNode,
                   sketch: Sketch.simple(
-                    draw: (s) {
+                    draw: (s) async {
                       s.noLoop();
                     },
                     keyTyped: (s) {

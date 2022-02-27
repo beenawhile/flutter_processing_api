@@ -11,7 +11,7 @@ void main() {
           await tester.pumpWidget(
             Processing(
               sketch: Sketch.simple(
-                draw: (s) {
+                draw: (s) async {
                   s
                     ..noLoop()
                     ..randomSeed(0);

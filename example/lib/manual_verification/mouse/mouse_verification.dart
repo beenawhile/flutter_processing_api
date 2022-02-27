@@ -8,13 +8,14 @@ class MouseVerificationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.yellow,
+      appBar: AppBar(),
       body: Center(
         child: Processing(
           sketch: Sketch.simple(
-              setup: (s) {
+              setup: (s) async {
                 s.size(width: 500, height: 500);
               },
-              draw: (s) {},
+              draw: (s) async {},
               mouseMoved: (s) {
                 print(
                   "mouseMoved - current position: (${s.mouseX}, ${s.mouseY}), \nprevious position: (${s.pmouseX}, ${s.pmouseY}),",

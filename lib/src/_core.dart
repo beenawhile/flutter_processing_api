@@ -118,10 +118,9 @@ class _ProcessingState extends State<Processing>
 
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
-    widget.sketch
-      .._canvas = canvas
-      .._doSetup()
-      .._onDraw();
+    widget.sketch._canvas = canvas;
+    await widget.sketch._doSetup();
+    await widget.sketch._onDraw();
 
     final picture = recorder.endRecording();
 
@@ -307,8 +306,8 @@ class _ProcessingState extends State<Processing>
 
 class Sketch {
   Sketch.simple({
-    void Function(Sketch)? setup,
-    void Function(Sketch)? draw,
+    Future<void> Function(Sketch)? setup,
+    Future<void> Function(Sketch)? draw,
     void Function(Sketch)? keyPressed,
     void Function(Sketch)? keyTyped,
     void Function(Sketch)? keyReleased,
@@ -332,8 +331,8 @@ class Sketch {
 
   Sketch();
 
-  void Function(Sketch)? _setup;
-  void Function(Sketch)? _draw;
+  Future<void> Function(Sketch)? _setup;
+  Future<void> Function(Sketch)? _draw;
   void Function(Sketch)? _keyPressed;
   void Function(Sketch)? _keyTyped;
   void Function(Sketch)? _keyReleased;
@@ -346,7 +345,7 @@ class Sketch {
 
   bool _hasDoneSetup = false;
 
-  void _doSetup() {
+  Future<void> _doSetup() async {
     if (_hasDoneSetup) {
       return;
     }
@@ -364,14 +363,14 @@ class Sketch {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
-    setup();
+    await setup();
   }
 
-  void setup() {
-    _setup?.call(this);
+  Future<void> setup() async {
+    await _setup?.call(this);
   }
 
-  void _onDraw() {
+  Future<void> _onDraw() async {
     background(color: _backgroundColor);
 
     // TODO: figure out how to correctly support varying frame rates
@@ -381,7 +380,7 @@ class Sketch {
     //   }
     // }
 
-    draw();
+    await draw();
 
     _frameCount += 1;
     _lastDrawTime = _elapsedTime;
@@ -392,8 +391,8 @@ class Sketch {
         : _actualFrameRate;
   }
 
-  void draw() {
-    _draw?.call(this);
+  Future<void> draw() async {
+    await _draw?.call(this);
   }
 
   void _onKeyPressed(LogicalKeyboardKey key) {
@@ -586,7 +585,29 @@ class Sketch {
   void noStroke() {
     _strokePaint.color = const Color(0x00000000);
   }
+
   //------- End Color/Setting -----
+  // Start Image/Loading & Displaying
+  Future<Image> loadImage(String filePath) async {
+    // rootBundle, AssetBundle:
+    // - generic interface for loading assets including images.
+
+    final imageData = await rootBundle.load(filePath);
+    final codec = await (await ImageDescriptor.encoded(
+      await ImmutableBuffer.fromUint8List(imageData.buffer.asUint8List()),
+    ))
+        .instantiateCodec();
+    return (await codec.getNextFrame()).image;
+  }
+
+  void image({
+    required Image image,
+    Offset origin = Offset.zero,
+    Size? displaySize,
+  }) {
+    // TODO: implement displaySize support.
+    _canvas.drawImage(image, origin, Paint());
+  }
 
   //----- Start Shape/2D Primitives ----
   void point({
