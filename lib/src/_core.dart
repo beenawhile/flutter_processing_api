@@ -71,6 +71,12 @@ class _ProcessingState extends State<Processing>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    widget.sketch._assetBundle = DefaultAssetBundle.of(context);
+  }
+
+  @override
   void didUpdateWidget(Processing oldWidget) {
     super.didUpdateWidget(oldWidget);
 
@@ -85,6 +91,7 @@ class _ProcessingState extends State<Processing>
         .._noLoop = null;
 
       widget.sketch
+        .._assetBundle = DefaultAssetBundle.of(context)
         .._onSizeChanged = _onSizeChanged
         .._loop = _loop
         .._noLoop = _noLoop;
@@ -343,9 +350,12 @@ class Sketch {
   void Function(Sketch)? _mouseMoved;
   void Function(Sketch, double count)? _mouseWheel;
 
+  AssetBundle? _assetBundle;
+
   bool _hasDoneSetup = false;
 
   Future<void> _doSetup() async {
+    assert(_assetBundle != null);
     if (_hasDoneSetup) {
       return;
     }
@@ -592,7 +602,7 @@ class Sketch {
     // rootBundle, AssetBundle:
     // - generic interface for loading assets including images.
 
-    final imageData = await rootBundle.load(filePath);
+    final imageData = await _assetBundle!.load(filePath);
     final codec = await (await ImageDescriptor.encoded(
       await ImmutableBuffer.fromUint8List(imageData.buffer.asUint8List()),
     ))
