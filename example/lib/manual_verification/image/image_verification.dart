@@ -19,15 +19,26 @@ class _ImageVerificationScreenState extends State<ImageVerificationScreen> {
       appBar: AppBar(),
       body: Center(
         child: Processing(
-          sketch: Sketch.simple(setup: (s) async {
-            s.size(width: 500, height: 500);
+          sketch: Sketch.simple(
+            setup: (s) async {
+              s.size(width: 500, height: 500);
 
-            _loadedImage = await s.loadImage("assets/images/audio-mixer.png");
-          }, draw: (s) async {
-            s.image(
-              image: _loadedImage,
-            );
-          }),
+              _loadedImage = await s.loadImage("assets/images/audio-mixer.png");
+            },
+            draw: (s) async {
+              s.image(
+                image: _loadedImage,
+              );
+
+              final pixelColor = await s.get(s.mouseX, s.mouseY);
+
+              s
+                ..fill(color: pixelColor)
+                ..circle(
+                    center: Offset(s.mouseX + 20, s.mouseY + 20), diameter: 100)
+                ..noStroke();
+            },
+          ),
         ),
       ),
     );
