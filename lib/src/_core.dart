@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
@@ -336,19 +337,20 @@ class Sketch {
   AssetBundle? _assetBundle;
 
   void Function(Image newFrame)? _onFrameAvailable;
-
-  bool _hasDoneSetup = false;
   bool _isDrawing = false;
 
   late PictureRecorder _recorder;
-  late Image _publishedImage;
   Image? _intermediateImage;
-  bool _hasUnappliedCanvasOperations = false;
+  bool _hasUnappliedCanvasCommands = false;
+  late Image _publishedImage;
+
+  bool _hasDoneSetup = false;
 
   Future<void> _doDrawFrame(Duration elapsedTime) async {
     if (_isDrawing || (_hasDoneSetup && !_isLooping)) {
       return;
     }
+
     _isDrawing = true;
     _intermediateImage = null;
 
@@ -356,7 +358,10 @@ class Sketch {
 
     _startRecording();
 
+    // Run Processing setup method.
     await _doSetup();
+
+    // Run Processing draw method.
     await _onDraw();
 
     await _finishRecording();
@@ -376,7 +381,7 @@ class Sketch {
 
     _canvas.drawImage(_intermediateImage!, Offset.zero, Paint());
 
-    _hasUnappliedCanvasOperations = false;
+    _hasUnappliedCanvasCommands = false;
   }
 
   Future<void> _finishRecording() async {
@@ -390,6 +395,7 @@ class Sketch {
 
   Future<void> _doSetup() async {
     assert(_assetBundle != null);
+
     if (_hasDoneSetup) {
       return;
     }
@@ -609,7 +615,7 @@ class Sketch {
     final paint = Paint()..color = color;
     _canvas.drawRect(Offset.zero & _size, paint);
 
-    _hasUnappliedCanvasOperations = true;
+    _hasUnappliedCanvasCommands = true;
   }
 
   void fill({
@@ -631,19 +637,18 @@ class Sketch {
   void noStroke() {
     _strokePaint.color = const Color(0x00000000);
   }
-
   //------- End Color/Setting -----
-  // Start Image/Loading & Displaying
-  Future<Image> loadImage(String filePath) async {
-    // rootBundle, AssetBundle:
-    // - generic interface for loading assets including images.
 
-    final imageData = await _assetBundle!.load(filePath);
+  //------- Start Image/Loading & Displaying -----
+  Future<Image> loadImage(String filepath) async {
+    final imageData = await _assetBundle!.load(filepath);
     final codec = await (await ImageDescriptor.encoded(
       await ImmutableBuffer.fromUint8List(imageData.buffer.asUint8List()),
     ))
         .instantiateCodec();
-    return (await codec.getNextFrame()).image;
+
+    final frame = await codec.getNextFrame();
+    return frame.image;
   }
 
   void image({
@@ -654,16 +659,12 @@ class Sketch {
     // TODO: implement displaySize support.
     _canvas.drawImage(image, origin, Paint());
 
-    _hasUnappliedCanvasOperations = true;
+    _hasUnappliedCanvasCommands = true;
   }
 
-  //----- Start Image/Pixels ----
+  //------- Start Image/Pixels -----
   Future<Color> get(int x, int y) async {
     await _doIntermediateRasterization();
-
-    // most recent image
-
-    // intermediate image
     final sourceImage = _intermediateImage ?? _publishedImage;
 
     final pixelDataOffset = _getBitmapPixelOffset(
@@ -671,14 +672,53 @@ class Sketch {
       x: x,
       y: y,
     );
-
-    // format is raw RGBA
-    // flutter usally use ARGB
     final imageData = await sourceImage.toByteData();
     final rgbaColor = imageData!.getUint32(pixelDataOffset);
     final argbColor =
         ((rgbaColor & 0x000000FF) << 24) | ((rgbaColor & 0xFFFFFF00) >> 8);
     return Color(argbColor);
+  }
+
+  Future<Image> getRegion({
+    required int x,
+    required int y,
+    required int width,
+    required int height,
+  }) async {
+    await _doIntermediateRasterization();
+    final sourceImage = _intermediateImage ?? _publishedImage;
+
+    final sourceData = await sourceImage.toByteData();
+    final destinationData = Uint8List(width * height * 4);
+    final rowLength = width * 4;
+
+    for (int row = 0; row < height; row += 1) {
+      final sourceRowOffset = _getBitmapPixelOffset(
+        imageWidth: sourceImage.width,
+        x: x,
+        y: y + row,
+      );
+      final destinationRowOffset = _getBitmapPixelOffset(
+        imageWidth: width,
+        x: 0,
+        y: row,
+      );
+
+      destinationData.setRange(
+        destinationRowOffset,
+        destinationRowOffset + rowLength - 1,
+        Uint8List.view(sourceData!.buffer, sourceRowOffset, rowLength),
+      );
+    }
+
+    final codec = await ImageDescriptor.raw(
+      await ImmutableBuffer.fromUint8List(destinationData),
+      width: width,
+      height: height,
+      pixelFormat: PixelFormat.rgba8888,
+    ).instantiateCodec();
+
+    return (await codec.getNextFrame()).image;
   }
 
   int _getBitmapPixelOffset({
@@ -706,7 +746,7 @@ class Sketch {
     );
     _strokePaint.style = PaintingStyle.stroke;
 
-    _hasUnappliedCanvasOperations = true;
+    _hasUnappliedCanvasCommands = true;
   }
 
   void line(Offset p1, Offset p2, [Offset? p3]) {
@@ -715,6 +755,8 @@ class Sketch {
     }
 
     _canvas.drawLine(p1, p2, _strokePaint);
+
+    _hasUnappliedCanvasCommands = true;
   }
 
   void circle({
@@ -725,7 +767,7 @@ class Sketch {
       ..drawCircle(center, diameter / 2, _fillPaint)
       ..drawCircle(center, diameter / 2, _strokePaint);
 
-    _hasUnappliedCanvasOperations = true;
+    _hasUnappliedCanvasCommands = true;
   }
 
   void ellipse(Ellipse ellipse) {
@@ -733,7 +775,7 @@ class Sketch {
       ..drawOval(ellipse.rect, _fillPaint) //
       ..drawOval(ellipse.rect, _strokePaint);
 
-    _hasUnappliedCanvasOperations = true;
+    _hasUnappliedCanvasCommands = true;
   }
 
   void arc({
@@ -776,7 +818,7 @@ class Sketch {
         break;
     }
 
-    _hasUnappliedCanvasOperations = true;
+    _hasUnappliedCanvasCommands = true;
   }
 
   void square(Square square) {
@@ -784,7 +826,7 @@ class Sketch {
       ..drawRect(square.rect, _fillPaint) //
       ..drawRect(square.rect, _strokePaint);
 
-    _hasUnappliedCanvasOperations = true;
+    _hasUnappliedCanvasCommands = true;
   }
 
   void rect({
@@ -808,7 +850,7 @@ class Sketch {
         ..drawRRect(rrect, _strokePaint);
     }
 
-    _hasUnappliedCanvasOperations = true;
+    _hasUnappliedCanvasCommands = true;
   }
 
   void triangle(Offset p1, Offset p2, Offset p3) {
@@ -822,7 +864,7 @@ class Sketch {
       ..drawPath(path, _fillPaint) //
       ..drawPath(path, _strokePaint);
 
-    _hasUnappliedCanvasOperations = true;
+    _hasUnappliedCanvasCommands = true;
   }
 
   void quad(Offset p1, Offset p2, Offset p3, Offset p4) {
@@ -837,7 +879,7 @@ class Sketch {
       ..drawPath(path, _fillPaint) //
       ..drawPath(path, _strokePaint);
 
-    _hasUnappliedCanvasOperations = true;
+    _hasUnappliedCanvasCommands = true;
   }
   //------- End Shape/2D Primitives -----
 
@@ -898,7 +940,7 @@ class Sketch {
 
     _canvas.translate(x ?? 0, y ?? 0);
 
-    _hasUnappliedCanvasOperations = true;
+    _hasUnappliedCanvasCommands = true;
   }
 
   // TODO: implement all other Processing APIs
