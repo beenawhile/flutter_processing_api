@@ -1,3 +1,4 @@
+import 'package:example/coding_challenge/3_random_walker/random_walker.dart';
 import 'package:flutter/material.dart';
 
 import '1_starfield/starfield_screen.dart';
@@ -39,6 +40,16 @@ class CodingChallengeScreen extends StatelessWidget {
                     ),
                   ),
                   child: const Text("2. Purple Rain"),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RandomWalkerScreen(),
+                    ),
+                  ),
+                  child: const Text("3. Random Walker"),
                 ),
               ],
             ),
