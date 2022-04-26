@@ -1,5 +1,6 @@
 import 'package:example/coding_challenge/3_random_walker/random_walker.dart';
 import 'package:example/coding_challenge/4_mitosis/mitosis_screen.dart';
+import 'package:example/coding_challenge/5_circle_packing/circle_packing_screen.dart';
 import 'package:flutter/material.dart';
 
 import '1_starfield/starfield_screen.dart';
@@ -61,6 +62,16 @@ class CodingChallengeScreen extends StatelessWidget {
                     ),
                   ),
                   child: const Text("4. Mitosis Simulation"),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CirclePackingScreen(),
+                    ),
+                  ),
+                  child: const Text("5. Animated Circle Packing"),
                 ),
               ],
             ),
