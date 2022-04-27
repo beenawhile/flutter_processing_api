@@ -34,7 +34,7 @@ class _CirclePackingWithTextScreenState
 class CirclePackingWithTextScatch extends Sketch {
   final List<Circle> _circles = [];
 
-  final _newCirclesPerFrame = 10;
+  final _newCirclesPerFrame = 20;
   final _maxNewCircleAttemps = 100;
 
   late ui.Image _textImage;
