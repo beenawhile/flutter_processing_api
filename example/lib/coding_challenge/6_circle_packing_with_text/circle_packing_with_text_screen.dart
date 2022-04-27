@@ -1,26 +1,24 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import 'package:flutter_processing/flutter_processing.dart';
 
-class CirclePackingScreen extends StatefulWidget {
-  const CirclePackingScreen({Key? key}) : super(key: key);
+class CirclePackingWithTextScreen extends StatefulWidget {
+  const CirclePackingWithTextScreen({Key? key}) : super(key: key);
 
   @override
-  State<CirclePackingScreen> createState() => _CirclePackingScreenState();
+  State<CirclePackingWithTextScreen> createState() =>
+      _CirclePackingWithTextScreenState();
 }
 
-class _CirclePackingScreenState extends State<CirclePackingScreen> {
-  Sketch _sketch = CirclePackingSketch();
-
-  @override
-  void reassemble() {
-    super.reassemble();
-    _sketch = CirclePackingSketch();
-  }
+class _CirclePackingWithTextScreenState
+    extends State<CirclePackingWithTextScreen> {
+  final Sketch _sketch = CirclePackingWithTextScatch();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -33,27 +31,49 @@ class _CirclePackingScreenState extends State<CirclePackingScreen> {
   }
 }
 
-class CirclePackingSketch extends Sketch {
+class CirclePackingWithTextScatch extends Sketch {
   final List<Circle> _circles = [];
+
+  final _newCirclesPerFrame = 10;
   final _maxNewCircleAttemps = 100;
 
-  final _newCirclesPerFrame = 5;
+  late ui.Image _textImage;
+
+  // find white pixel position
+  final _whitePixels = <Offset>[];
+
   @override
   Future<void> setup() async {
     size(width: 800, height: 400);
+    _textImage = await loadImage("assets/images/flutter-text.png");
+
+    final imageBytes = (await _textImage.toByteData()) as ByteData;
+    for (int col = 0; col < _textImage.width; col += 1) {
+      for (int row = 0; row < _textImage.height; row += 1) {
+        // 4 bytes for pixel: red, green, blue, alpha
+        final pixelOffset = ((row * _textImage.width) + col) * 4;
+        // Uint32: 8 bits for byte * 4 bits for color
+        final rgbaColor = imageBytes.getUint32(pixelOffset);
+
+        if (rgbaColor == 0xFFFFFFFF) {
+          _whitePixels.add(Offset(col.toDouble(), row.toDouble()));
+        }
+      }
+    }
   }
 
   @override
   Future<void> draw() async {
     background(color: Colors.black);
 
-    final didFindRoom = _generateNewCircle();
+    // image(image: _textImage);
+    final didFindRoom = _generateCircle();
     if (!didFindRoom) {
       noLoop();
     }
 
     final screenSize = Size(width.toDouble(), height.toDouble());
-    for (final circle in _circles) {
+    for (var circle in _circles) {
       if (circle.isAgainstEdges(screenSize)) {
         circle.stopGrowing();
       }
@@ -71,61 +91,67 @@ class CirclePackingSketch extends Sketch {
       }
 
       circle
-        ..grow()
-        ..paint(this);
+        ..paint(this)
+        ..grow();
     }
   }
 
-  /// Generates a group of new circles, if there is a room to do so.
-  ///
-  /// Returns `true` if new circles were added, or `false` if ther
-  /// wasn't enough room.
-  bool _generateNewCircle() {
+  bool _generateCircle() {
     for (var i = 0; i < _newCirclesPerFrame; i++) {
-      late Offset randomOffset;
+      late Offset _randomOffset;
       bool overlapsOtherCircle = false;
       int attempts = 0;
 
       do {
-        randomOffset = Offset(random(width), random(height));
+        _randomOffset = _whitePixels[random(_whitePixels.length).floor()];
 
         overlapsOtherCircle = false;
         for (final circle in _circles) {
-          if (circle.contains(randomOffset)) {
+          if (circle.contains(_randomOffset)) {
             overlapsOtherCircle = true;
             break;
           }
         }
+
         attempts += 1;
         if (attempts >= _maxNewCircleAttemps) {
           return false;
         }
       } while (overlapsOtherCircle);
 
-      _circles.add(
-        Circle(
-          offset: randomOffset,
-          radius: 1,
-        ),
-      );
+      _circles.add(Circle(offset: _randomOffset, radius: 1));
     }
     return true;
   }
 }
 
 class Circle {
+  final Offset _offset;
+
+  double _radius;
+
+  int _strokeWeight = 2;
+
+  bool _isGrowing = true;
   Circle({
     required Offset offset,
     required double radius,
   })  : _offset = offset,
         _radius = radius;
 
-  Offset _offset;
-  double _radius;
+  double get radius => _radius;
+  Offset get offset => _offset;
   bool get isGrowing => _isGrowing;
-  bool _isGrowing = true;
 
-  int _strokeWeight = 2;
+  void grow() {
+    if (isGrowing) {
+      _radius += 0.5;
+    }
+  }
+
+  void stopGrowing() {
+    _isGrowing = false;
+  }
 
   bool isAgainstEdges(Size screenSize) {
     final boundaryRect = Rect.fromCircle(center: _offset, radius: _radius);
@@ -141,17 +167,7 @@ class Circle {
   }
 
   bool overlaps(Circle other) {
-    return (other._offset - _offset).distance <= (other._radius + _radius);
-  }
-
-  void grow() {
-    if (_isGrowing) {
-      _radius += 0.5;
-    }
-  }
-
-  void stopGrowing() {
-    _isGrowing = false;
+    return (_offset - other.offset).distance <= _radius + other.radius;
   }
 
   void paint(Sketch s) {
@@ -159,6 +175,6 @@ class Circle {
       ..strokeWeight(_strokeWeight)
       ..stroke(color: Colors.white)
       ..fill(color: Colors.black)
-      ..circle(center: _offset, diameter: _radius * 2);
+      ..circle(center: offset, diameter: _radius * 2);
   }
 }
