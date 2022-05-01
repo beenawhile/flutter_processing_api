@@ -1,13 +1,13 @@
-import 'package:example/coding_challenge/3_random_walker/random_walker.dart';
-import 'package:example/coding_challenge/4_mitosis/mitosis_screen.dart';
-import 'package:example/coding_challenge/5_circle_packing/circle_packing_screen.dart';
-import 'package:example/coding_challenge/6_circle_packing_with_text/circle_packing_with_text_screen.dart';
-import 'package:example/coding_challenge/7_metaballs/meta_balls_screen.dart';
-import 'package:example/coding_challenge/8_phyllotaxis/phyllotaxis_screen.dart';
 import 'package:flutter/material.dart';
 
 import '1_starfield/starfield_screen.dart';
 import '2_purple_rain/purple_rain_screen.dart';
+import '3_random_walker/random_walker.dart';
+import '4_mitosis/mitosis_screen.dart';
+import '5_circle_packing/circle_packing_screen.dart';
+import '6_circle_packing_with_text/circle_packing_with_text_screen.dart';
+import '7_metaballs/meta_balls_screen.dart';
+import '8_phyllotaxis/phyllotaxis_screen.dart';
 
 class CodingChallengeScreen extends StatelessWidget {
   const CodingChallengeScreen({Key? key}) : super(key: key);
