@@ -128,7 +128,7 @@ class _ProcessingState extends State<Processing>
   }
 
   void _onSizeChanged() {
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       setState(() {});
     });
   }
